@@ -1,16 +1,6 @@
 <script setup lang="ts">
 import { computed, h, reactive, ref } from 'vue';
-import {
-  NButton,
-  NCard,
-  NForm,
-  NFormItem,
-  NGi,
-  NGrid,
-  NInput,
-  NScrollbar,
-  NSpace
-} from 'naive-ui';
+import { NButton, NCard, NForm, NFormItem, NGi, NGrid, NInput, NScrollbar, NSpace } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 
 // 登录表单数据
@@ -482,7 +472,7 @@ const handleRegister = () => {
         <!-- 主要功能区域：通知公告、登录区域、政策文件 -->
         <div class="primary-row">
           <!-- 通知公告模块 -->
-          <div class="content-section announcement-section">
+          <div class="announcement-section content-section">
             <div class="section-header">
               <h3>
                 <Icon icon="mdi:bullhorn" class="section-icon" />
@@ -495,22 +485,13 @@ const handleRegister = () => {
                 <div
                   v-for="announcement in announcements"
                   :key="announcement.id"
-                  class="news-item"
+                  class="news-item simplified"
                   @click="viewAnnouncementDetail(announcement)"
                 >
-                  <div class="news-header">
-                    <span v-if="announcement.isTop" class="top-badge">置顶</span>
-                    <span class="type-badge" :class="`type-${announcement.type}`">
-                      {{
-                        announcement.type === 'important' ? '重要' : announcement.type === 'notice' ? '通知' : '一般'
-                      }}
-                    </span>
-                    <span class="view-count">{{ announcement.viewCount || 0 }} 次查看</span>
-                  </div>
-                  <span class="news-title">{{ announcement.title }}</span>
-                  <div class="news-meta">
-                    <span class="news-date">[{{ announcement.date }}]</span>
-                    <span class="news-department">{{ announcement.department || '系统管理员' }}</span>
+                  <div class="news-content">
+                    <span v-if="announcement.isTop" class="top-indicator">●</span>
+                    <span class="news-title">{{ announcement.title }}</span>
+                    <span class="news-date">{{ announcement.date }}</span>
                   </div>
                 </div>
               </div>
@@ -534,45 +515,17 @@ const handleRegister = () => {
               <NButton text size="small" class="more-btn" @click="viewMorePolicies">更多 ></NButton>
             </div>
 
-            <!-- 政策分类筛选 -->
-            <div class="policy-filters" style="margin-bottom: 16px">
-              <NSpace>
-                <NButton
-                  v-for="category in policyCategories"
-                  :key="category"
-                  :type="selectedPolicyCategory === category ? 'primary' : 'default'"
-                  size="small"
-                  @click="filterPoliciesByCategory(category)"
-                >
-                  {{ category }}
-                </NButton>
-              </NSpace>
-            </div>
-
             <NScrollbar style="max-height: 320px" trigger="hover">
               <div class="news-list">
-                <div v-for="policy in filteredPolicyFiles" :key="policy.id" class="news-item policy-item">
-                  <div class="policy-header">
-                    <span class="news-title">{{ policy.title }}</span>
-                    <div class="policy-actions">
-                      <span class="file-size">{{ policy.fileSize }}</span>
-                      <NButton
-                        size="tiny"
-                        type="primary"
-                        ghost
-                        style="margin-left: 8px"
-                        @click="downloadPolicy(policy)"
-                      >
-                        <Icon icon="mdi:download" />
-                        下载
-                      </NButton>
+                <div v-for="policy in policyFiles" :key="policy.id" class="news-item simplified policy-item">
+                  <div class="news-content policy-content">
+                    <div class="policy-main">
+                      <span class="news-title">{{ policy.title }}</span>
+                      <span class="news-date">{{ policy.date }}</span>
                     </div>
-                  </div>
-                  <div class="policy-meta">
-                    <span class="policy-department">{{ policy.department }}</span>
-                    <span class="policy-number">{{ policy.fileNumber }}</span>
-                    <span class="policy-category">{{ policy.category }}</span>
-                    <span class="news-date">[{{ policy.date }}]</span>
+                    <NButton size="tiny" type="primary" ghost @click="downloadPolicy(policy)">
+                      <Icon icon="mdi:download" />
+                    </NButton>
                   </div>
                 </div>
               </div>
@@ -586,160 +539,53 @@ const handleRegister = () => {
             </div>
           </div>
 
-          <!-- 核心登录区域 -->
-          <div class="content-section login-section primary-login">
-            <!-- 快速查询模块 -->
-            <div class="quick-query-section">
-              <div class="section-header">
-                <h3>
-                  <Icon icon="mdi:magnify" class="section-icon" />
-                  快速查询
-                </h3>
-              </div>
-              <div class="search-content">
-                <div class="search-options">
-                  <NButton :type="searchType === 'all' ? 'primary' : 'default'" size="tiny" @click="searchType = 'all'">
-                    全部
-                  </NButton>
-                  <NButton
-                    :type="searchType === 'announcement' ? 'primary' : 'default'"
-                    size="tiny"
-                    @click="searchType = 'announcement'"
-                  >
-                    公告
-                  </NButton>
-                  <NButton
-                    :type="searchType === 'policy' ? 'primary' : 'default'"
-                    size="tiny"
-                    @click="searchType = 'policy'"
-                  >
-                    政策
-                  </NButton>
-                  <NButton
-                    :type="searchType === 'role' ? 'primary' : 'default'"
-                    size="tiny"
-                    @click="searchType = 'role'"
-                  >
-                    角色
-                  </NButton>
-                </div>
-                <NInput
-                  v-model:value="searchKeyword"
-                  placeholder="请输入关键词"
-                  size="small"
-                  style="margin-top: 8px"
-                  @keyup.enter="handleSearch"
-                >
-                  <template #suffix>
-                    <Icon icon="mdi:magnify" style="cursor: pointer" @click="handleSearch" />
-                  </template>
-                </NInput>
-
-                <!-- 搜索建议 -->
-                <div class="search-suggestions" style="margin-top: 12px">
-                  <div style="font-size: 12px; color: #718096; margin-bottom: 8px">热门搜索：</div>
-                  <div class="suggestion-tags">
-                    <span
-                      v-for="suggestion in searchSuggestions.slice(0, 4)"
-                      :key="suggestion"
-                      class="suggestion-tag"
-                      @click="handleQuickSearch(suggestion)"
-                    >
-                      {{ suggestion }}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <!-- 用户登录区域 -->
+          <div class="content-section login-section">
+            <div class="section-header">
+              <h3>
+                <Icon icon="mdi:account-circle" class="section-icon" />
+                用户登录
+              </h3>
             </div>
-
-            <!-- 登录区域 -->
-            <NCard class="login-card">
-              <template #header>
-                <div class="login-header">
-                  <Icon icon="mdi:account-circle" style="color: #1976d2" />
-                  <span>用户登录</span>
-                  <div class="login-type-switch">
-                    <NButton
-                      :type="loginType === 'password' ? 'primary' : 'default'"
-                      size="tiny"
-                      @click="switchLoginType('password')"
-                    >
-                      密码登录
-                    </NButton>
-                    <NButton
-                      :type="loginType === 'sms' ? 'primary' : 'default'"
-                      size="tiny"
-                      @click="switchLoginType('sms')"
-                    >
-                      短信登录
-                    </NButton>
-                  </div>
-                </div>
-              </template>
-
-              <NForm :model="loginForm" size="medium">
-                <!-- 密码登录表单 -->
-                <template v-if="loginType === 'password'">
-                  <NFormItem>
-                    <NInput v-model:value="loginForm.username" placeholder="用户名/手机号" size="small">
-                      <template #prefix>
-                        <Icon icon="mdi:account" />
-                      </template>
-                    </NInput>
-                  </NFormItem>
-                  <NFormItem>
-                    <NInput
-                      v-model:value="loginForm.password"
-                      type="password"
-                      placeholder="密码"
-                      size="small"
-                      show-password-on="mousedown"
-                    >
-                      <template #prefix>
-                        <Icon icon="mdi:lock" />
-                      </template>
-                    </NInput>
-                  </NFormItem>
-                </template>
-
-                <!-- 短信验证登录表单 -->
-                <template v-else>
-                  <NFormItem>
-                    <NInput v-model:value="loginForm.phone" placeholder="手机号" size="small">
-                      <template #prefix>
-                        <Icon icon="mdi:phone" />
-                      </template>
-                    </NInput>
-                  </NFormItem>
-                  <NFormItem>
-                    <div class="sms-input-group">
-                      <NInput v-model:value="loginForm.smsCode" placeholder="验证码" size="small" style="flex: 1">
-                        <template #prefix>
-                          <Icon icon="mdi:message-text" />
-                        </template>
-                      </NInput>
-                      <NButton size="small" style="margin-left: 8px">发送验证码</NButton>
-                    </div>
-                  </NFormItem>
-                </template>
-
+            
+            <div class="login-form-container">
+              <NForm :model="loginForm">
                 <NFormItem>
-                  <NButton type="primary" block size="small" @click="handleLogin">登录</NButton>
+                  <NInput v-model:value="loginForm.username" placeholder="用户名/手机号">
+                    <template #prefix>
+                      <Icon icon="mdi:account" />
+                    </template>
+                  </NInput>
+                </NFormItem>
+                <NFormItem>
+                  <NInput
+                    v-model:value="loginForm.password"
+                    type="password"
+                    placeholder="密码"
+                    show-password-on="mousedown"
+                  >
+                    <template #prefix>
+                      <Icon icon="mdi:lock" />
+                    </template>
+                  </NInput>
+                </NFormItem>
+                <NFormItem>
+                  <NButton type="primary" block @click="handleLogin">登录</NButton>
                 </NFormItem>
               </NForm>
 
-              <div class="login-links">
+              <div class="login-extra">
                 <NSpace justify="space-between">
-                  <NButton text size="tiny" @click="handleForgotPassword">忘记密码</NButton>
-                  <NButton text size="tiny" @click="handleRegister">注册</NButton>
+                  <NButton text size="small" @click="handleForgotPassword">忘记密码</NButton>
+                  <NButton text size="small" @click="handleRegister">快速注册</NButton>
                 </NSpace>
               </div>
-            </NCard>
+            </div>
           </div>
         </div>
 
         <!-- 次要功能区域：系统角色、快速链接、统计、日程 -->
-        <div class="secondary-row">
+        <div class="bottom-section">
           <!-- 系统角色模块 -->
           <div class="content-section secondary-section">
             <div class="section-header">
@@ -1142,17 +988,41 @@ const handleRegister = () => {
 
 /* 主要功能区域：通知公告、登录区域、政策文件 */
 .primary-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 2fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
-/* 次要功能区域：系统角色、快速链接、统计、日程 */
-.secondary-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+/* 下方功能区域：角色系统、快速链接 */
+.bottom-section {
+  display: flex;
+  gap: 20px;
+}
+
+/* 内容区域宽度控制 */
+.announcement-section {
+  flex: 2.2;
+}
+
+.login-section {
+  flex: 1;
+}
+
+.policy-section {
+  flex: 2.2;
+}
+
+.role-section {
+  flex: 2.2;
+}
+
+.links-section {
+  flex: 1;
+}
+
+/* 隐藏不需要的模块 */
+.secondary-section:nth-child(n+3) {
+  display: none;
 }
 
 /* 基础内容区域样式 */
@@ -1169,7 +1039,7 @@ const handleRegister = () => {
 
 /* 主要区域样式 */
 .primary-row .content-section {
-  height: 420px;
+  height: 400px;
   box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
 }
 
@@ -1178,13 +1048,13 @@ const handleRegister = () => {
   border-color: #cbd5e0;
 }
 
-/* 次要区域样式 */
-.secondary-section {
-  height: 360px;
+/* 下方区域样式 */
+.bottom-section .content-section {
+  height: 300px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-.secondary-section:hover {
+.bottom-section .content-section:hover {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   border-color: #cbd5e0;
 }
@@ -1223,31 +1093,63 @@ const handleRegister = () => {
   background: transparent;
 }
 
-/* 快速链接样式优化 */
-.quick-links {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+/* 简化角色系统样式 */
+.role-container {
   flex: 1;
-  align-content: start;
 }
 
-.quick-link {
+.role-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+.role-icon {
+  font-size: 20px;
+  color: #1e40af;
+}
+
+.role-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* 简化快速链接样式 */
+.quick-links-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.quick-link-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   color: #374151;
   text-decoration: none;
   font-size: 13px;
-  font-weight: 500;
   transition: all 0.2s ease;
 }
 
-.quick-link:hover {
+.quick-link-item:hover {
   background: #f1f5f9;
   border-color: #cbd5e0;
   color: #1e40af;
@@ -1785,11 +1687,11 @@ const handleRegister = () => {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
-  
+
   .primary-row .content-section:last-child {
     grid-column: 1 / -1;
   }
-  
+
   .secondary-row {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
@@ -1802,42 +1704,77 @@ const handleRegister = () => {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .primary-row .content-section,
   .secondary-section {
     height: auto;
     min-height: 300px;
   }
-  
+
   .main-content {
     padding: 12px;
   }
-  
+
   .content-section {
     padding: 16px;
   }
 }
 
-/* 细节优化 */
-.news-item {
-  padding: 14px;
-  border: 1px solid #f1f5f9;
-  border-radius: 6px;
-  margin-bottom: 10px;
+/* 简化的新闻项样式 */
+.news-item.simplified {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: #fefefe;
+  transition: background 0.2s;
 }
 
-.news-item:hover {
-  border-color: #e2e8f0;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transform: translateY(-1px);
+.news-item.simplified:hover {
+  background: #f8fafc;
 }
 
-.news-item:last-child {
-  margin-bottom: 0;
+.news-item.simplified:last-child {
+  border-bottom: none;
+}
+
+.news-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.policy-content {
+  align-items: flex-start;
+}
+
+.policy-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.top-indicator {
+  color: #dc2626;
+  font-size: 10px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.news-title {
+  flex: 1;
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.news-date {
+  font-size: 12px;
+  color: #9ca3af;
+  flex-shrink: 0;
 }
 
 .role-card {
@@ -1848,24 +1785,21 @@ const handleRegister = () => {
 
 .role-card:hover {
   border-color: #e2e8f0;
-  box-shadow: 0 2px 12px rgba(30, 64, 175, 0.10);
+  box-shadow: 0 2px 12px rgba(30, 64, 175, 0.1);
   transform: translateY(-1px);
 }
 
-/* 登录表单优化 */
-.login-header {
+/* 简化的登录表单样式 */
+.login-form-container {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
 }
 
-.login-type-switch {
-  display: flex;
-  gap: 6px;
+.login-extra {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
 }
 
 /* 按钮统一样式 */

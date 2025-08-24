@@ -166,7 +166,10 @@ const local: App.I18n.Schema = {
     404: 'Page Not Found',
     500: 'Server Error',
     'iframe-page': 'Iframe',
-    home: 'Home'
+    home: 'Home',
+    login_backup: 'Login Backup',
+    login_backup_20250824: 'Login Backup 20250824',
+    login_backup_20250824_212117: 'Login Backup 20250824212117'
   },
   page: {
     login: {

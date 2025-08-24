@@ -23,7 +23,7 @@ interface SystemRole {
   icon: string;
 }
 
-// 通知公告数据
+// 通知公告数据 - 增加更多数据以便滚动
 const announcements = reactive([
   {
     id: 1,
@@ -54,6 +54,36 @@ const announcements = reactive([
     type: 'normal',
     viewCount: 156,
     department: '评审办公室'
+  },
+  {
+    id: 4,
+    title: '职称评审专家库补充选聘工作启动',
+    content: '为进一步完善职称评审专家库，现启动专家补充选聘工作...',
+    date: '2024-01-08',
+    isTop: false,
+    type: 'normal',
+    viewCount: 78,
+    department: '人事司'
+  },
+  {
+    id: 5,
+    title: '关于规范职称评审材料格式的通知',
+    content: '为提高评审效率，规范评审材料，现就材料格式要求通知如下...',
+    date: '2024-01-05',
+    isTop: false,
+    type: 'normal',
+    viewCount: 234,
+    department: '评审办公室'
+  },
+  {
+    id: 6,
+    title: '职称评审结果公示期延长公告',
+    content: '根据相关规定，本次职称评审结果公示期延长至15个工作日...',
+    date: '2024-01-03',
+    isTop: false,
+    type: 'notice',
+    viewCount: 167,
+    department: '监督处'
   }
 ]);
 
@@ -248,6 +278,36 @@ const viewMoreAnnouncements = () => {
   window.$message?.info('正在跳转到通知公告列表页面...');
 };
 
+// 通知自动滚动功能
+const autoScroll = ref(true);
+const scrollSpeed = ref(1);
+
+const startAutoScroll = () => {
+  if (!autoScroll.value) return;
+  
+  const scrollContainer = document.querySelector('.announcement-list');
+  if (scrollContainer) {
+    scrollContainer.scrollTop += scrollSpeed.value;
+    
+    // 如果滚动到底部，回到顶部
+    if (scrollContainer.scrollTop >= scrollContainer.scrollHeight - scrollContainer.clientHeight) {
+      scrollContainer.scrollTop = 0;
+    }
+  }
+  
+  setTimeout(startAutoScroll, 50);
+};
+
+// 鼠标悬停停止滚动
+const pauseScroll = () => {
+  autoScroll.value = false;
+};
+
+const resumeScroll = () => {
+  autoScroll.value = true;
+  startAutoScroll();
+};
+
 // 查看更多政策文件
 const viewMorePolicies = () => {
   // 查看更多政策文件
@@ -436,6 +496,8 @@ const handleRegister = () => {
                 :key="item.id"
                 class="announcement-item"
                 @click="viewAnnouncementDetail(item)"
+                @mouseenter="pauseScroll"
+                @mouseleave="resumeScroll"
               >
                 <div class="item-content">
                   <span v-if="item.isTop" class="top-badge">置顶</span>
@@ -927,18 +989,18 @@ const handleRegister = () => {
   gap: var(--gov-spacing-lg);
 }
 
-/* ===== 第一行布局：2:2:1.5 ===== */
+/* ===== 第一行布局：2.5:2.5:1.5 ===== */
 .primary-section {
   display: flex;
   gap: var(--gov-spacing-lg);
 }
 
 .announcements-card {
-  flex: 2;
+  flex: 2.5;
 }
 
 .policies-card {
-  flex: 2;
+  flex: 2.5;
 }
 
 .login-card {

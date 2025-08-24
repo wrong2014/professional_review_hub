@@ -6,7 +6,9 @@ import { Icon } from '@iconify/vue'
 // 登录表单数据
 const loginForm = reactive({
   username: '',
-  password: ''
+  password: '',
+  phone: '',
+  smsCode: ''
 })
 
 // 登录方式：password（密码登录）、sms（短信验证登录）
@@ -214,7 +216,7 @@ const handleSearch = () => {
           mockResults.map(result => 
             h('div', { 
               class: 'result-item',
-              style: 'padding: 12px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 8px; cursor: pointer;',
+              style: 'padding: 12px; border: 1px solid #e1e5e9; border-radius: 4px; margin-bottom: 8px; cursor: pointer;',
               onClick: () => window.$message?.info(`正在打开：${result.title}`)
             }, [
               h('h4', { style: 'margin: 0 0 8px 0; color: #2d3748;' }, result.title),
@@ -414,11 +416,40 @@ const handleRegister = () => {
       </div>
     </div>
 
+    <!-- 横幅Banner -->
+    <div class="hero-banner">
+      <div class="banner-container">
+        <div class="banner-content">
+          <div class="banner-text">
+            <h2>专业、高效、公正的职称评审服务平台</h2>
+            <p>为专业技术人员提供标准化、数字化的职称评审全流程服务</p>
+            <div class="banner-stats">
+              <div class="stat-item">
+                <span class="stat-number">10,000+</span>
+                <span class="stat-label">注册用户</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">5,000+</span>
+                <span class="stat-label">成功评审</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">98%</span>
+                <span class="stat-label">满意度</span>
+              </div>
+            </div>
+          </div>
+          <div class="banner-image">
+            <Icon icon="mdi:certificate" style="font-size: 120px; color: rgba(255,255,255,0.3);" />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 主要内容区域 -->
     <div class="main-content">
       <div class="content-container">
-        <!-- 左侧内容区 -->
-        <div class="left-content">
+        <!-- 第一行：通知公告、政策文件、登录 -->
+        <div class="top-row">
           <!-- 通知公告模块 -->
           <div class="content-section">
             <div class="section-header">
@@ -540,50 +571,8 @@ const handleRegister = () => {
             </div>
           </div>
 
-          <!-- 系统角色模块 -->
-          <div class="content-section">
-            <div class="section-header">
-              <h3>
-                <Icon icon="mdi:account-group" style="color: #1976d2; margin-right: 8px;" />
-                系统角色
-              </h3>
-            </div>
-            <NGrid :cols="2" :x-gap="16" :y-gap="16" class="role-grid">
-              <NGi v-for="role in systemRoles" :key="role.id">
-                <NCard 
-                  class="role-card" 
-                  hoverable
-                  @click="selectRole(role)"
-                >
-                  <div class="role-content">
-                    <div class="role-header">
-                      <Icon :icon="role.icon === 'user' ? 'mdi:account' : role.icon === 'expert' ? 'mdi:account-star' : role.icon === 'institution' ? 'mdi:office-building' : role.icon === 'admin' ? 'mdi:account-cog' : role.icon === 'auditor' ? 'mdi:account-check' : role.icon === 'operator' ? 'mdi:account-wrench' : role.icon === 'super_admin' ? 'mdi:account-supervisor' : 'mdi:account-eye'" class="role-icon" />
-                      <h4 class="role-name">{{ role.name }}</h4>
-                    </div>
-                    <p class="role-description">{{ role.description }}</p>
-                    <div class="role-permissions">
-                      <span 
-                        v-for="permission in role.permissions.slice(0, 3)" 
-                        :key="permission"
-                        class="permission-tag"
-                      >
-                        {{ permission }}
-                      </span>
-                      <span v-if="role.permissions.length > 3" class="more-permissions">
-                        +{{ role.permissions.length - 3 }}
-                      </span>
-                    </div>
-                  </div>
-                </NCard>
-              </NGi>
-            </NGrid>
-          </div>
-        </div>
-
-        <!-- 右侧边栏 -->
-        <div class="right-sidebar">
-          <!-- 登录区域（支持短信验证登录） -->
-          <div class="login-section">
+          <!-- 登录区域 -->
+          <div class="content-section login-section">
             <NCard class="login-card">
               <template #header>
                 <div class="login-header">
@@ -687,14 +676,94 @@ const handleRegister = () => {
               </div>
             </NCard>
           </div>
+        </div>
 
-          <!-- 快速查询功能 -->
-          <div class="sidebar-section">
-            <div class="sidebar-header">
-              <Icon icon="mdi:magnify" style="color: #1976d2;" />
-              <span>快速查询</span>
+        <!-- 第二行：系统角色、快速链接、快速查询 -->
+        <div class="bottom-row">
+          <!-- 系统角色模块 -->
+          <div class="content-section">
+            <div class="section-header">
+              <h3>
+                <Icon icon="mdi:account-group" style="color: #1976d2; margin-right: 8px;" />
+                系统角色
+              </h3>
             </div>
-            <div class="sidebar-content">
+            <NGrid :cols="2" :x-gap="16" :y-gap="16" class="role-grid">
+              <NGi v-for="role in systemRoles" :key="role.id">
+                <NCard 
+                  class="role-card" 
+                  hoverable
+                  @click="selectRole(role)"
+                >
+                  <div class="role-content">
+                    <div class="role-header">
+                      <Icon :icon="role.icon === 'user' ? 'mdi:account' : role.icon === 'expert' ? 'mdi:account-star' : role.icon === 'institution' ? 'mdi:office-building' : role.icon === 'admin' ? 'mdi:account-cog' : role.icon === 'auditor' ? 'mdi:account-check' : role.icon === 'operator' ? 'mdi:account-wrench' : role.icon === 'super_admin' ? 'mdi:account-supervisor' : 'mdi:account-eye'" class="role-icon" />
+                      <h4 class="role-name">{{ role.name }}</h4>
+                    </div>
+                    <p class="role-description">{{ role.description }}</p>
+                    <div class="role-permissions">
+                      <span 
+                        v-for="permission in role.permissions.slice(0, 3)" 
+                        :key="permission"
+                        class="permission-tag"
+                      >
+                        {{ permission }}
+                      </span>
+                      <span v-if="role.permissions.length > 3" class="more-permissions">
+                        +{{ role.permissions.length - 3 }}
+                      </span>
+                    </div>
+                  </div>
+                </NCard>
+              </NGi>
+            </NGrid>
+          </div>
+
+          <!-- 快速链接模块 -->
+          <div class="content-section">
+            <div class="section-header">
+              <h3>
+                <Icon icon="mdi:link-variant" style="color: #1976d2; margin-right: 8px;" />
+                快速链接
+              </h3>
+            </div>
+            <div class="quick-links">
+              <a href="#" class="quick-link">
+                <Icon icon="mdi:file-plus" />
+                职称申报
+              </a>
+              <a href="#" class="quick-link">
+                <Icon icon="mdi:progress-check" />
+                申报进度
+              </a>
+              <a href="#" class="quick-link">
+                <Icon icon="mdi:account-check" />
+                专家评审
+              </a>
+              <a href="#" class="quick-link">
+                <Icon icon="mdi:chart-line" />
+                评审结果
+              </a>
+              <a href="#" class="quick-link">
+                <Icon icon="mdi:file-document-outline" />
+                政策法规
+              </a>
+              <a href="#" class="quick-link">
+                <Icon icon="mdi:help-circle" />
+                帮助中心
+              </a>
+            </div>
+          </div>
+
+          <!-- 快速查询模块 -->
+          <div class="content-section">
+            <div class="section-header">
+              <h3>
+                <Icon icon="mdi:magnify" style="color: #1976d2; margin-right: 8px;" />
+                快速查询
+              </h3>
+            </div>
+            <div class="search-content">
               <div class="search-options">
                 <NButton 
                   :type="searchType === 'all' ? 'primary' : 'default'"
@@ -753,32 +822,55 @@ const handleRegister = () => {
               </div>
             </div>
           </div>
-
-          <!-- 快速链接 -->
-          <div class="sidebar-section">
-            <div class="sidebar-title">快速链接</div>
-            <div class="quick-links">
-              <a href="#" class="quick-link">
-                <Icon icon="mdi:file-plus" />
-                职称申报
-              </a>
-              <a href="#" class="quick-link">
-                <Icon icon="mdi:progress-check" />
-                申报进度
-              </a>
-              <a href="#" class="quick-link">
-                <Icon icon="mdi:account-check" />
-                专家评审
-              </a>
-              <a href="#" class="quick-link">
-                <Icon icon="mdi:chart-line" />
-                评审结果
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </div>
+
+    <!-- 页脚 -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h4>关于我们</h4>
+            <ul>
+              <li><a href="#">平台介绍</a></li>
+              <li><a href="#">服务条款</a></li>
+              <li><a href="#">隐私政策</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>服务支持</h4>
+            <ul>
+              <li><a href="#">使用指南</a></li>
+              <li><a href="#">常见问题</a></li>
+              <li><a href="#">技术支持</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>联系我们</h4>
+            <ul>
+              <li>服务热线：400-123-4567</li>
+              <li>邮箱：service@title-eval.gov.cn</li>
+              <li>工作时间：周一至周五 9:00-17:30</li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>友情链接</h4>
+            <ul>
+              <li><a href="#">人力资源社会保障部</a></li>
+              <li><a href="#">中国人事考试网</a></li>
+              <li><a href="#">专业技术人员管理司</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="copyright">
+            <p>&copy; 2024 职称标准化评审系统. 版权所有 | 备案号：京ICP备12345678号</p>
+            <p>主办单位：人力资源和社会保障部 | 技术支持：国家信息中心</p>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -894,33 +986,120 @@ const handleRegister = () => {
   background: linear-gradient(to bottom, rgba(30, 64, 175, 0.05), transparent);
 }
 
+/* Banner样式 */
+.hero-banner {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+  color: white;
+  padding: 40px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+  opacity: 0.3;
+}
+
+.banner-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.banner-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.banner-text h2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+}
+
+.banner-text p {
+  font-size: 18px;
+  margin: 0 0 32px 0;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.banner-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.banner-image {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 /* 主要内容区域 */
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 16px;
 }
 
 .content-container {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 24px;
-}
-
-/* 左侧内容区 */
-.left-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+}
+
+/* 第一行：通知公告、政策文件、登录 */
+.top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 400px;
+  gap: 20px;
+}
+
+/* 第二行：系统角色、快速链接、快速查询 */
+.bottom-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
 }
 
 .content-section {
   background: white;
   border-radius: 4px;
-  padding: 24px;
+  padding: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   border: 1px solid #e1e5e9;
   transition: all 0.3s ease;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
 }
 
 .content-section:hover {
@@ -928,12 +1107,41 @@ const handleRegister = () => {
   transform: translateY(-2px);
 }
 
+/* 内容区域自动填充剩余空间 */
+.content-section .news-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 登录区域保持原有样式 */
+.content-section.login-section {
+  height: 500px;
+  justify-content: center;
+}
+
+/* 快速链接样式调整 */
+.quick-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: 1;
+  align-content: start;
+}
+
+/* 搜索内容样式 */
+.search-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
   border-bottom: 2px solid #f7fafc;
 }
 
@@ -949,11 +1157,11 @@ const handleRegister = () => {
 .news-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .news-item {
-  padding: 16px;
+  padding: 12px;
   border-radius: 4px;
   transition: all 0.2s;
   cursor: pointer;
@@ -1192,7 +1400,7 @@ const handleRegister = () => {
 
 .login-section {
   background: white;
-  border-radius: 12px;
+  border-radius: 4px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   border: 1px solid #e1e5e9;
@@ -1233,8 +1441,8 @@ const handleRegister = () => {
 
 .sidebar-section {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 4px;
+  padding: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   border: 1px solid #e1e5e9;
 }
@@ -1243,7 +1451,7 @@ const handleRegister = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   font-weight: 600;
   color: #2d3748;
 }
@@ -1252,8 +1460,8 @@ const handleRegister = () => {
   font-size: 16px;
   font-weight: 600;
   color: #2d3748;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
   border-bottom: 2px solid #f7fafc;
 }
 
@@ -1267,17 +1475,17 @@ const handleRegister = () => {
 .quick-links {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .quick-link {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: #4a5568;
   text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
   transition: all 0.2s;
   border: 1px solid #e1e5e9;
 }
@@ -1300,7 +1508,7 @@ const handleRegister = () => {
   background: linear-gradient(45deg, #f8fafc, #e2e8f0);
   color: #4a5568;
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: 4px;
   font-size: 11px;
   cursor: pointer;
   transition: all 0.2s;
@@ -1330,7 +1538,7 @@ const handleRegister = () => {
 @media (max-width: 1024px) {
   .content-container {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
   }
   
   .nav-container {
@@ -1338,25 +1546,44 @@ const handleRegister = () => {
   }
   
   .main-content {
-    padding: 16px;
+    padding: 12px;
+  }
+  
+  .banner-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    text-align: center;
+  }
+  
+  .banner-text h2 {
+    font-size: 28px;
+  }
+  
+  .banner-text p {
+    font-size: 16px;
+  }
+  
+  .banner-stats {
+    justify-content: center;
+    gap: 24px;
   }
 }
 
 @media (max-width: 768px) {
   .nav-container {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     text-align: center;
   }
   
   .nav-menu {
     flex-wrap: wrap;
     justify-content: center;
-    padding: 0 16px;
+    padding: 0 12px;
   }
   
   .nav-item {
-    padding: 12px 16px;
+    padding: 10px 14px;
     font-size: 14px;
   }
   
@@ -1367,6 +1594,130 @@ const handleRegister = () => {
   .search-box {
     width: 100%;
   }
+  
+  .hero-banner {
+    padding: 24px 0;
+  }
+  
+  .banner-text h2 {
+    font-size: 24px;
+  }
+  
+  .banner-text p {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .banner-stats {
+    gap: 16px;
+  }
+  
+  .stat-number {
+    font-size: 24px;
+  }
+  
+  .main-content {
+    padding: 8px;
+  }
+  
+  .content-section {
+    padding: 12px;
+  }
+  
+  .top-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .bottom-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .footer-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px 0;
+  }
+}
+
+/* 平板响应式 */
+@media (max-width: 1024px) {
+  .top-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .bottom-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .footer-content {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+}
+
+/* 页脚样式 */
+.site-footer {
+  background: #2d3748;
+  color: white;
+  margin-top: 40px;
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  padding: 40px 0;
+}
+
+.footer-section h4 {
+  color: #e2e8f0;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #a0aec0;
+}
+
+.footer-section a {
+  color: #a0aec0;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-section a:hover {
+  color: #e2e8f0;
+}
+
+.footer-bottom {
+  border-top: 1px solid #4a5568;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.copyright p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #a0aec0;
 }
 
 /* 动画效果 */

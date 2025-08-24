@@ -166,10 +166,7 @@ const local: App.I18n.Schema = {
     404: '页面不存在',
     500: '服务器错误',
     'iframe-page': '外链页面',
-    home: '首页',
-    login_backup: '登录备份',
-    login_backup_20250824: '登录备份20250824',
-    login_backup_20250824_212117: '登录备份20250824212117'
+    home: '首页'
   },
   page: {
     login: {

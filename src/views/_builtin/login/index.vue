@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h, reactive, ref } from 'vue';
+import { h, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { NButton, NForm, NFormItem, NInput } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 
@@ -284,17 +284,17 @@ const scrollSpeed = ref(1);
 
 const startAutoScroll = () => {
   if (!autoScroll.value) return;
-  
+
   const scrollContainer = document.querySelector('.announcement-list');
   if (scrollContainer) {
     scrollContainer.scrollTop += scrollSpeed.value;
-    
+
     // 如果滚动到底部，回到顶部
     if (scrollContainer.scrollTop >= scrollContainer.scrollHeight - scrollContainer.clientHeight) {
       scrollContainer.scrollTop = 0;
     }
   }
-  
+
   setTimeout(startAutoScroll, 50);
 };
 
@@ -393,6 +393,18 @@ const handleForgotPassword = () => {
 const handleRegister = () => {
   // 用户注册逻辑
 };
+
+// 生命周期钩子
+onMounted(() => {
+  // 启动通知自动滚动
+  setTimeout(() => {
+    startAutoScroll();
+  }, 2000); // 延迟2秒开始滚动
+});
+
+onUnmounted(() => {
+  autoScroll.value = false;
+});
 </script>
 
 <template>
@@ -886,13 +898,20 @@ const handleRegister = () => {
   background: linear-gradient(to bottom, rgba(30, 64, 175, 0.05), transparent);
 }
 
-/* ===== Hero Section ===== */
+/* ===== Hero Section - 震撼升级 ===== */
 .hero-section {
-  background: linear-gradient(135deg, var(--gov-primary) 0%, var(--gov-primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--gov-primary) 0%,
+    var(--gov-primary-light) 20%,
+    #2563eb 40%,
+    var(--gov-primary-dark) 100%
+  );
   color: white;
-  padding: 48px 0;
+  padding: 64px 0;
   position: relative;
   overflow: hidden;
+  min-height: 400px;
 }
 
 .hero-section::before {
@@ -902,9 +921,46 @@ const handleRegister = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-  background-size: 30px 30px;
-  opacity: 0.4;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size:
+    30px 30px,
+    60px 60px;
+  opacity: 0.6;
+  animation: heroPattern 20s linear infinite;
+}
+
+.hero-section::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: heroGlow 15s ease-in-out infinite;
+}
+
+@keyframes heroPattern {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate(-30px, -30px) rotate(360deg);
+  }
+}
+
+@keyframes heroGlow {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translate(-10%, -10%) scale(1.1);
+    opacity: 0.2;
+  }
 }
 
 .hero-container {
@@ -926,19 +982,34 @@ const handleRegister = () => {
 }
 
 .hero-text h2 {
-  font-size: 36px;
-  font-weight: 800;
+  font-size: 42px;
+  font-weight: 900;
   margin: 0 0 var(--gov-spacing-md) 0;
-  line-height: 1.3;
-  letter-spacing: -0.5px;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  animation: heroTextGlow 3s ease-in-out infinite;
 }
 
 .hero-text p {
-  font-size: 18px;
+  font-size: 20px;
   margin: 0 0 var(--gov-spacing-xl) 0;
   opacity: 0.95;
   line-height: 1.6;
-  font-weight: 400;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes heroTextGlow {
+  0%,
+  100% {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    text-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      0 0 20px rgba(255, 255, 255, 0.1);
+  }
 }
 
 .stats-row {
@@ -948,35 +1019,77 @@ const handleRegister = () => {
 
 .stat-card {
   text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  padding: var(--gov-spacing-md);
-  border-radius: var(--gov-radius);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  padding: var(--gov-spacing-lg);
+  border-radius: 12px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  animation: statFloat 4s ease-in-out infinite;
+}
+
+.stat-card:nth-child(2) {
+  animation-delay: 1s;
+}
+
+.stat-card:nth-child(3) {
+  animation-delay: 2s;
+}
+
+.stat-card:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes statFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .stat-number {
   display: block;
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 38px;
+  font-weight: 900;
   margin-bottom: var(--gov-spacing-xs);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .stat-label {
-  font-size: 14px;
-  opacity: 0.9;
-  font-weight: 500;
+  font-size: 15px;
+  opacity: 0.95;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .hero-visual {
   flex: 1;
   text-align: center;
+  position: relative;
 }
 
 .hero-icon {
-  font-size: 160px;
-  color: rgba(255, 255, 255, 0.2);
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  font-size: 200px;
+  color: rgba(255, 255, 255, 0.3);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+  animation: iconPulse 6s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
 }
 
 /* ===== 主要内容区域 ===== */
@@ -996,11 +1109,11 @@ const handleRegister = () => {
 }
 
 .announcements-card {
-  flex: 2.5;
+  flex: 1.5;
 }
 
 .policies-card {
-  flex: 2.5;
+  flex: 1.5;
 }
 
 .login-card {
@@ -1014,7 +1127,7 @@ const handleRegister = () => {
 }
 
 .roles-card {
-  flex: 3;
+  flex: 3.3;
 }
 
 .links-card {

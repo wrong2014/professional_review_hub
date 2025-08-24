@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, h, reactive, ref } from 'vue';
-import { NButton, NCard, NForm, NFormItem, NGi, NGrid, NInput, NScrollbar, NSpace } from 'naive-ui';
+import { h, reactive, ref } from 'vue';
+import { NButton, NForm, NFormItem, NInput } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 
 // 登录表单数据
@@ -91,102 +91,62 @@ const policyFiles = reactive([
   }
 ]);
 
-// 政策分类
-const policyCategories = reactive(['全部', '制度改革', '评价标准', '管理办法', '申报指南']);
-const selectedPolicyCategory = ref('全部');
-
-// 筛选后的政策文件
-const filteredPolicyFiles = computed(() => {
-  if (selectedPolicyCategory.value === '全部') {
-    return policyFiles;
-  }
-  return policyFiles.filter(policy => policy.category === selectedPolicyCategory.value);
-});
-
-// 系统角色数据
+// 系统角色数据 - 简化为一行两个
 const systemRoles: SystemRole[] = reactive([
   {
     id: 'applicant',
     name: '申报个人',
-    description: '个人用户，可进行职称申报、查看申报进度、上传申报材料',
-    permissions: ['apply', 'view_progress', 'upload_materials'],
+    description: '个人用户申报职称',
+    permissions: ['apply', 'view_progress'],
     icon: 'user'
   },
   {
     id: 'expert',
     name: '评审专家',
-    description: '参与职称评审的专家，负责评审申报材料和打分',
-    permissions: ['review_materials', 'score', 'comment'],
+    description: '参与职称评审打分',
+    permissions: ['review_materials', 'score'],
     icon: 'expert'
   },
   {
     id: 'institution',
     name: '评审机构',
-    description: '负责组织职称评审工作的机构',
-    permissions: ['organize_review', 'manage_experts', 'publish_results'],
+    description: '组织职称评审工作',
+    permissions: ['organize_review', 'manage_experts'],
     icon: 'institution'
   },
   {
     id: 'admin',
-    name: '管理员',
-    description: '系统管理员，负责系统角色授权和基础配置',
-    permissions: ['role_management', 'system_config', 'user_management'],
+    name: '系统管理员',
+    description: '系统配置管理',
+    permissions: ['system_config', 'user_management'],
     icon: 'admin'
-  },
-  {
-    id: 'auditor',
-    name: '审核员',
-    description: '负责申报资料的初步核验工作',
-    permissions: ['verify_materials', 'preliminary_review', 'feedback'],
-    icon: 'auditor'
-  },
-  {
-    id: 'operator',
-    name: '操作员',
-    description: '负责业务全流程操作管理',
-    permissions: ['process_management', 'workflow_control', 'data_entry'],
-    icon: 'operator'
-  },
-  {
-    id: 'super_admin',
-    name: '超级管理员',
-    description: '负责评审委员会及评审过程的全面管理',
-    permissions: ['committee_management', 'process_oversight', 'system_admin'],
-    icon: 'super_admin'
-  },
-  {
-    id: 'supervisor',
-    name: '人社部门监管员',
-    description: '人社部门监管人员，负责监督评审过程',
-    permissions: ['supervision', 'audit_trail', 'compliance_check'],
-    icon: 'supervisor'
   }
 ]);
 
 // 查询功能相关
 const searchKeyword = ref('');
-const searchType = ref('all'); // all, announcement, policy, role
+const _searchType = ref('all');
 
 // 登录处理函数
 const handleLogin = () => {
-  console.log('登录信息:', loginForm);
-  // 这里添加实际的登录逻辑
+  // 登录逻辑
 };
 
 // 切换登录方式
-const switchLoginType = (type: 'password' | 'sms') => {
+const _switchLoginType = (type: 'password' | 'sms') => {
   loginType.value = type;
-  // 清空表单
   Object.assign(loginForm, {
     username: '',
-    password: ''
+    password: '',
+    phone: '',
+    smsCode: ''
   });
 };
 
 // 搜索功能
 const searchQuery = ref('');
 const searchResults = ref<Array<{ title: string; type: string; date: string }>>([]);
-const searchSuggestions = ref([
+const _searchSuggestions = ref([
   '职称评审流程',
   '申报材料清单',
   '评审标准',
@@ -201,9 +161,8 @@ const handleSearch = () => {
     window.$message?.warning('请输入搜索关键词');
     return;
   }
-  console.log('搜索:', { keyword, type: searchType.value });
+  // 搜索逻辑
 
-  // 模拟搜索结果
   const mockResults = [
     { title: `关于"${keyword}"的搜索结果1`, type: '通知公告', date: '2024-01-15' },
     { title: `关于"${keyword}"的搜索结果2`, type: '政策文件', date: '2024-01-10' },
@@ -212,7 +171,6 @@ const handleSearch = () => {
 
   searchResults.value = mockResults;
 
-  // 显示搜索结果弹窗
   window.$dialog?.info({
     title: `搜索结果 - "${keyword}"`,
     content: () => {
@@ -248,15 +206,14 @@ const handleSearch = () => {
 };
 
 // 快速搜索建议
-const handleQuickSearch = (suggestion: string) => {
+const _handleQuickSearch = (suggestion: string) => {
   searchKeyword.value = suggestion;
   handleSearch();
 };
 
 // 查看通知详情
 const viewAnnouncementDetail = (announcement: any) => {
-  console.log('查看通知详情:', announcement.title);
-  // 增加查看次数
+  // 查看通知详情
   announcement.viewCount = (announcement.viewCount || 0) + 1;
 
   window.$dialog?.info({
@@ -287,27 +244,19 @@ const viewAnnouncementDetail = (announcement: any) => {
 
 // 查看更多通知公告
 const viewMoreAnnouncements = () => {
-  console.log('查看更多通知公告');
+  // 查看更多通知公告
   window.$message?.info('正在跳转到通知公告列表页面...');
-  // 这里可以添加路由跳转逻辑
 };
 
 // 查看更多政策文件
 const viewMorePolicies = () => {
-  console.log('查看更多政策文件');
+  // 查看更多政策文件
   window.$message?.info('正在跳转到政策文件列表页面...');
-  // 这里可以添加路由跳转逻辑
-};
-
-// 按分类筛选政策文件
-const filterPoliciesByCategory = (category: string) => {
-  selectedPolicyCategory.value = category;
-  console.log('筛选政策分类:', category);
 };
 
 // 下载政策文件
 const downloadPolicy = (policy: any) => {
-  console.log('下载政策文件:', policy.title);
+  // 下载政策文件
   window.$dialog?.info({
     title: '政策文件详情',
     content: () => {
@@ -333,18 +282,11 @@ const downloadPolicy = (policy: any) => {
     negativeText: '关闭',
     onPositiveClick: () => {
       window.$message?.success('正在准备下载，请稍候...');
-      // 这里可以添加实际的文件下载逻辑
     }
   });
 };
 
 // 选择系统角色
-const selectRole = (role: SystemRole) => {
-  console.log('选择角色:', role.name);
-  // 显示角色详情弹窗
-  showRoleDetail(role);
-};
-
 // 显示角色详情
 const showRoleDetail = (role: SystemRole) => {
   window.$dialog?.info({
@@ -364,7 +306,7 @@ const showRoleDetail = (role: SystemRole) => {
           h(
             'p',
             { style: 'margin-top: 16px; color: #666; font-size: 14px;' },
-            '点击"确定"进入角色登录，或"取消"返回首页'
+            '点击“确定”进入角色登录，或“取消”返回首页'
           )
         ])
       ]);
@@ -372,58 +314,66 @@ const showRoleDetail = (role: SystemRole) => {
     positiveText: '进入登录',
     negativeText: '取消',
     onPositiveClick: () => {
-      // 这里可以跳转到对应角色的登录页面或直接登录
       window.$message?.success(`正在为您准备${role.name}登录界面...`);
-      // 实际项目中可以根据角色类型跳转到不同的登录流程
     }
   });
 };
 
+const selectRole = (role: SystemRole) => {
+  // 显示角色详情弹窗
+  showRoleDetail(role);
+};
+
 // 处理忘记密码
 const handleForgotPassword = () => {
-  console.log('忘记密码');
+  // 忘记密码逻辑
 };
 
 // 处理注册
 const handleRegister = () => {
-  console.log('用户注册');
+  // 用户注册逻辑
 };
 </script>
 
 <template>
-  <div class="title-evaluation-portal">
-    <!-- 顶部导航栏 -->
-    <div class="top-nav">
-      <div class="nav-container">
-        <div class="nav-left">
-          <div class="gov-emblem">
-            <Icon icon="mdi:shield-star" style="font-size: 24px; color: #d32f2f" />
+  <div class="gov-portal">
+    <!-- 顶部导航栏 - 政务蓝主色调 -->
+    <header class="gov-header">
+      <div class="header-container">
+        <div class="header-left">
+          <div class="gov-logo">
+            <Icon icon="mdi:shield-star" class="logo-icon" />
           </div>
-          <div class="site-title">
+          <div class="site-info">
             <h1>职称标准化评审系统</h1>
             <p>Professional Title Standardized Evaluation System</p>
           </div>
         </div>
-        <div class="nav-right">
-          <div class="search-box">
-            <NInput v-model:value="searchKeyword" placeholder="搜索通知公告、政策文件、系统角色..." size="small">
+        <div class="header-right">
+          <div class="search-container">
+            <NInput
+              v-model:value="searchKeyword"
+              placeholder="搜索通知公告、政策文件..."
+              class="header-search"
+              size="small"
+            >
               <template #suffix>
-                <NButton text size="small" @click="handleSearch">
+                <NButton text size="small" class="search-btn" @click="handleSearch">
                   <Icon icon="mdi:magnify" />
                 </NButton>
               </template>
             </NInput>
           </div>
-          <div class="nav-buttons">
-            <NButton size="small" class="nav-btn">帮助中心</NButton>
-            <NButton size="small" class="nav-btn">联系我们</NButton>
+          <div class="header-nav">
+            <NButton text size="small" class="nav-link">帮助中心</NButton>
+            <NButton text size="small" class="nav-link">联系我们</NButton>
           </div>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- 主导航菜单 -->
-    <div class="main-nav">
+    <!-- 主导航菜单 - 扁平化设计 -->
+    <nav class="main-nav">
       <div class="nav-container">
         <div class="nav-menu">
           <div class="nav-item active">首页</div>
@@ -435,123 +385,105 @@ const handleRegister = () => {
           <div class="nav-item">帮助中心</div>
         </div>
       </div>
-    </div>
+    </nav>
 
-    <!-- 横幅Banner -->
-    <div class="hero-banner">
-      <div class="banner-container">
-        <div class="banner-content">
-          <div class="banner-text">
+    <!-- Banner区域 - 政务风格 -->
+    <section class="hero-section">
+      <div class="hero-container">
+        <div class="hero-content">
+          <div class="hero-text">
             <h2>专业、高效、公正的职称评审服务平台</h2>
             <p>为专业技术人员提供标准化、数字化的职称评审全流程服务</p>
-            <div class="banner-stats">
-              <div class="stat-item">
-                <span class="stat-number">10,000+</span>
-                <span class="stat-label">注册用户</span>
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-number">10,000+</div>
+                <div class="stat-label">注册用户</div>
               </div>
-              <div class="stat-item">
-                <span class="stat-number">5,000+</span>
-                <span class="stat-label">成功评审</span>
+              <div class="stat-card">
+                <div class="stat-number">5,000+</div>
+                <div class="stat-label">成功评审</div>
               </div>
-              <div class="stat-item">
-                <span class="stat-number">98%</span>
-                <span class="stat-label">满意度</span>
+              <div class="stat-card">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">满意度</div>
               </div>
             </div>
           </div>
-          <div class="banner-image">
-            <Icon icon="mdi:certificate" style="font-size: 120px; color: rgba(255, 255, 255, 0.3)" />
+          <div class="hero-visual">
+            <Icon icon="mdi:certificate" class="hero-icon" />
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- 主要内容区域 -->
-    <div class="main-content">
-      <div class="content-container">
-        <!-- 主要功能区域：通知公告、登录区域、政策文件 -->
-        <div class="primary-row">
-          <!-- 通知公告模块 -->
-          <div class="announcement-section content-section">
-            <div class="section-header">
-              <h3>
-                <Icon icon="mdi:bullhorn" class="section-icon" />
-                通知公告
-              </h3>
-              <NButton text size="small" class="more-btn">更多 ></NButton>
-            </div>
-            <NScrollbar style="max-height: 320px" trigger="hover">
-              <div class="news-list">
-                <div
-                  v-for="announcement in announcements"
-                  :key="announcement.id"
-                  class="news-item simplified"
-                  @click="viewAnnouncementDetail(announcement)"
-                >
-                  <div class="news-content">
-                    <span v-if="announcement.isTop" class="top-indicator">●</span>
-                    <span class="news-title">{{ announcement.title }}</span>
-                    <span class="news-date">{{ announcement.date }}</span>
-                  </div>
+    <main class="main-container">
+      <!-- 第一行：通知公告(2) + 政策文件(2) + 登录区域(1) -->
+      <section class="primary-section">
+        <!-- 通知公告 -->
+        <div class="announcements-card content-card">
+          <div class="card-header">
+            <h3>
+              <Icon icon="mdi:bullhorn" class="header-icon" />
+              通知公告
+            </h3>
+            <NButton text size="small" class="more-link" @click="viewMoreAnnouncements">更多</NButton>
+          </div>
+          <div class="card-content">
+            <div class="announcement-list">
+              <div
+                v-for="item in announcements"
+                :key="item.id"
+                class="announcement-item"
+                @click="viewAnnouncementDetail(item)"
+              >
+                <div class="item-content">
+                  <span v-if="item.isTop" class="top-badge">置顶</span>
+                  <span class="item-title">{{ item.title }}</span>
                 </div>
+                <span class="item-date">{{ item.date }}</span>
               </div>
-            </NScrollbar>
-
-            <!-- 查看更多按钮 -->
-            <div class="more-actions" style="margin-top: 16px; text-align: center">
-              <NButton text type="primary" style="font-size: 14px" @click="viewMoreAnnouncements">
-                查看更多通知公告 →
-              </NButton>
             </div>
           </div>
+        </div>
 
-          <!-- 政策文件模块 -->
-          <div class="content-section policy-section">
-            <div class="section-header">
-              <h3>
-                <Icon icon="mdi:file-document" class="section-icon" />
-                政策文件
-              </h3>
-              <NButton text size="small" class="more-btn" @click="viewMorePolicies">更多 ></NButton>
-            </div>
-
-            <NScrollbar style="max-height: 320px" trigger="hover">
-              <div class="news-list">
-                <div v-for="policy in policyFiles" :key="policy.id" class="news-item simplified policy-item">
-                  <div class="news-content policy-content">
-                    <div class="policy-main">
-                      <span class="news-title">{{ policy.title }}</span>
-                      <span class="news-date">{{ policy.date }}</span>
-                    </div>
-                    <NButton size="tiny" type="primary" ghost @click="downloadPolicy(policy)">
-                      <Icon icon="mdi:download" />
-                    </NButton>
-                  </div>
+        <!-- 政策文件 -->
+        <div class="content-card policies-card">
+          <div class="card-header">
+            <h3>
+              <Icon icon="mdi:file-document" class="header-icon" />
+              政策文件
+            </h3>
+            <NButton text size="small" class="more-link" @click="viewMorePolicies">更多</NButton>
+          </div>
+          <div class="card-content">
+            <div class="policy-list">
+              <div v-for="item in policyFiles" :key="item.id" class="policy-item" @click="downloadPolicy(item)">
+                <div class="item-content">
+                  <span class="item-title">{{ item.title }}</span>
+                  <span class="item-meta">{{ item.department }} · {{ item.date }}</span>
                 </div>
+                <NButton size="tiny" type="primary" ghost>
+                  <Icon icon="mdi:download" />
+                </NButton>
               </div>
-            </NScrollbar>
-
-            <!-- 查看更多按钮 -->
-            <div class="more-actions" style="margin-top: 16px; text-align: center">
-              <NButton text type="primary" style="font-size: 14px" @click="viewMorePolicies">
-                查看更多政策文件 →
-              </NButton>
             </div>
           </div>
+        </div>
 
-          <!-- 用户登录区域 -->
-          <div class="content-section login-section">
-            <div class="section-header">
-              <h3>
-                <Icon icon="mdi:account-circle" class="section-icon" />
-                用户登录
-              </h3>
-            </div>
-            
-            <div class="login-form-container">
+        <!-- 登录区域 -->
+        <div class="content-card login-card">
+          <div class="card-header">
+            <h3>
+              <Icon icon="mdi:account-circle" class="header-icon" />
+              用户登录
+            </h3>
+          </div>
+          <div class="card-content">
+            <div class="login-form">
               <NForm :model="loginForm">
                 <NFormItem>
-                  <NInput v-model:value="loginForm.username" placeholder="用户名/手机号">
+                  <NInput v-model:value="loginForm.username" placeholder="用户名/手机号" class="login-input">
                     <template #prefix>
                       <Icon icon="mdi:account" />
                     </template>
@@ -563,6 +495,7 @@ const handleRegister = () => {
                     type="password"
                     placeholder="密码"
                     show-password-on="mousedown"
+                    class="login-input"
                   >
                     <template #prefix>
                       <Icon icon="mdi:lock" />
@@ -570,173 +503,96 @@ const handleRegister = () => {
                   </NInput>
                 </NFormItem>
                 <NFormItem>
-                  <NButton type="primary" block @click="handleLogin">登录</NButton>
+                  <NButton type="primary" block class="login-btn" @click="handleLogin">登录</NButton>
                 </NFormItem>
               </NForm>
+              <div class="login-actions">
+                <NButton text size="small" @click="handleForgotPassword">忘记密码</NButton>
+                <NButton text size="small" @click="handleRegister">快速注册</NButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              <div class="login-extra">
-                <NSpace justify="space-between">
-                  <NButton text size="small" @click="handleForgotPassword">忘记密码</NButton>
-                  <NButton text size="small" @click="handleRegister">快速注册</NButton>
-                </NSpace>
+      <!-- 第二行：系统角色(4) + 快速链接(1) -->
+      <section class="secondary-section">
+        <!-- 系统角色 -->
+        <div class="content-card roles-card">
+          <div class="card-header">
+            <h3>
+              <Icon icon="mdi:account-group" class="header-icon" />
+              系统角色
+            </h3>
+          </div>
+          <div class="card-content">
+            <div class="roles-grid">
+              <div v-for="role in systemRoles" :key="role.id" class="role-item" @click="selectRole(role)">
+                <div class="role-icon-wrapper">
+                  <Icon
+                    :icon="
+                      role.icon === 'user'
+                        ? 'mdi:account'
+                        : role.icon === 'expert'
+                          ? 'mdi:account-star'
+                          : role.icon === 'institution'
+                            ? 'mdi:office-building'
+                            : 'mdi:account-cog'
+                    "
+                    class="role-icon"
+                  />
+                </div>
+                <div class="role-info">
+                  <div class="role-name">{{ role.name }}</div>
+                  <div class="role-desc">{{ role.description }}</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 次要功能区域：系统角色、快速链接、统计、日程 -->
-        <div class="bottom-section">
-          <!-- 系统角色模块 -->
-          <div class="content-section secondary-section">
-            <div class="section-header">
-              <h3>
-                <Icon icon="mdi:account-group" class="section-icon" />
-                系统角色
-              </h3>
-            </div>
-            <NScrollbar style="max-height: 320px" trigger="hover">
-              <NGrid :cols="2" :x-gap="16" :y-gap="16" class="role-grid">
-                <NGi v-for="role in systemRoles" :key="role.id">
-                  <NCard class="role-card" hoverable @click="selectRole(role)">
-                    <div class="role-content">
-                      <div class="role-header">
-                        <Icon
-                          :icon="
-                            role.icon === 'user'
-                              ? 'mdi:account'
-                              : role.icon === 'expert'
-                                ? 'mdi:account-star'
-                                : role.icon === 'institution'
-                                  ? 'mdi:office-building'
-                                  : role.icon === 'admin'
-                                    ? 'mdi:account-cog'
-                                    : role.icon === 'auditor'
-                                      ? 'mdi:account-check'
-                                      : role.icon === 'operator'
-                                        ? 'mdi:account-wrench'
-                                        : role.icon === 'super_admin'
-                                          ? 'mdi:account-supervisor'
-                                          : 'mdi:account-eye'
-                          "
-                          class="role-icon"
-                        />
-                        <h4 class="role-name">{{ role.name }}</h4>
-                      </div>
-                      <p class="role-description">{{ role.description }}</p>
-                      <div class="role-permissions">
-                        <span
-                          v-for="permission in role.permissions.slice(0, 3)"
-                          :key="permission"
-                          class="permission-tag"
-                        >
-                          {{ permission }}
-                        </span>
-                        <span v-if="role.permissions.length > 3" class="more-permissions">
-                          +{{ role.permissions.length - 3 }}
-                        </span>
-                      </div>
-                    </div>
-                  </NCard>
-                </NGi>
-              </NGrid>
-            </NScrollbar>
+        <!-- 快速链接 -->
+        <div class="content-card links-card">
+          <div class="card-header">
+            <h3>
+              <Icon icon="mdi:link-variant" class="header-icon" />
+              快速链接
+            </h3>
           </div>
-
-          <!-- 快速链接模块 -->
-          <div class="content-section secondary-section">
-            <div class="section-header">
-              <h3>
-                <Icon icon="mdi:link-variant" class="section-icon" />
-                快速链接
-              </h3>
+          <div class="card-content">
+            <div class="quick-links">
+              <a href="#" class="link-item">
+                <Icon icon="mdi:file-plus" />
+                <span>职称申报</span>
+              </a>
+              <a href="#" class="link-item">
+                <Icon icon="mdi:progress-check" />
+                <span>申报进度</span>
+              </a>
+              <a href="#" class="link-item">
+                <Icon icon="mdi:account-check" />
+                <span>专家评审</span>
+              </a>
+              <a href="#" class="link-item">
+                <Icon icon="mdi:chart-line" />
+                <span>评审结果</span>
+              </a>
+              <a href="#" class="link-item">
+                <Icon icon="mdi:file-document-outline" />
+                <span>政策法规</span>
+              </a>
+              <a href="#" class="link-item">
+                <Icon icon="mdi:help-circle" />
+                <span>帮助中心</span>
+              </a>
             </div>
-            <NScrollbar style="max-height: 320px" trigger="hover">
-              <div class="quick-links">
-                <a href="#" class="quick-link">
-                  <Icon icon="mdi:file-plus" />
-                  职称申报
-                </a>
-                <a href="#" class="quick-link">
-                  <Icon icon="mdi:progress-check" />
-                  申报进度
-                </a>
-                <a href="#" class="quick-link">
-                  <Icon icon="mdi:account-check" />
-                  专家评审
-                </a>
-                <a href="#" class="quick-link">
-                  <Icon icon="mdi:chart-line" />
-                  评审结果
-                </a>
-                <a href="#" class="quick-link">
-                  <Icon icon="mdi:file-document-outline" />
-                  政策法规
-                </a>
-                <a href="#" class="quick-link">
-                  <Icon icon="mdi:help-circle" />
-                  帮助中心
-                </a>
-              </div>
-            </NScrollbar>
-          </div>
-
-          <!-- 数据统计模块 -->
-          <div class="content-section secondary-section">
-            <div class="section-header">
-              <h3>
-                <Icon icon="mdi:chart-box" class="section-icon" />
-                数据统计
-              </h3>
-            </div>
-            <NScrollbar style="max-height: 320px" trigger="hover">
-              <div class="stats-content">
-                <div class="stat-item">
-                  <div class="stat-number">1,234</div>
-                  <div class="stat-label">今日申报</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-number">5,678</div>
-                  <div class="stat-label">待审核</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-number">9,012</div>
-                  <div class="stat-label">已完成</div>
-                </div>
-              </div>
-            </NScrollbar>
-          </div>
-
-          <!-- 重要日程模块 -->
-          <div class="content-section secondary-section">
-            <div class="section-header">
-              <h3>
-                <Icon icon="mdi:calendar-clock" class="section-icon" />
-                重要日程
-              </h3>
-            </div>
-            <NScrollbar style="max-height: 320px" trigger="hover">
-              <div class="schedule-content">
-                <div class="schedule-item">
-                  <div class="schedule-date">12月15日</div>
-                  <div class="schedule-title">职称评审截止</div>
-                </div>
-                <div class="schedule-item">
-                  <div class="schedule-date">12月20日</div>
-                  <div class="schedule-title">专家评审开始</div>
-                </div>
-                <div class="schedule-item">
-                  <div class="schedule-date">12月25日</div>
-                  <div class="schedule-title">结果公示</div>
-                </div>
-              </div>
-            </NScrollbar>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
 
     <!-- 页脚 -->
-    <footer class="site-footer">
+    <footer class="gov-footer">
       <div class="footer-container">
         <div class="footer-content">
           <div class="footer-section">
@@ -783,1172 +639,663 @@ const handleRegister = () => {
   </div>
 </template>
 
-<style scoped>
-/* 职称标准化评审系统样式 */
-.title-evaluation-portal {
+<style>
+/* ===== 政务蓝主题色彩系统 ===== */
+:root {
+  --gov-primary: #1e40af; /* 政务蓝主色 */
+  --gov-primary-light: #3b82f6; /* 政务蓝浅色 */
+  --gov-primary-dark: #1d4ed8; /* 政务蓝深色 */
+  --gov-secondary: #64748b; /* 次要色 */
+  --gov-success: #059669; /* 成功色 */
+  --gov-warning: #d97706; /* 警告色 */
+  --gov-error: #dc2626; /* 错误色 */
+  --gov-text-primary: #1f2937; /* 主要文本色 */
+  --gov-text-secondary: #6b7280; /* 次要文本色 */
+  --gov-text-muted: #9ca3af; /* 弱化文本色 */
+  --gov-bg-primary: #ffffff; /* 主背景色 */
+  --gov-bg-secondary: #f8fafc; /* 次背景色 */
+  --gov-bg-tertiary: #f1f5f9; /* 第三背景色 */
+  --gov-border: #e5e7eb; /* 边框色 */
+  --gov-border-light: #f3f4f6; /* 浅边框色 */
+  --gov-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --gov-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --gov-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.06);
+  --gov-radius: 6px; /* 圆角大小 */
+  --gov-spacing-xs: 4px; /* 极小间距 */
+  --gov-spacing-sm: 8px; /* 小间距 */
+  --gov-spacing-md: 16px; /* 中等间距 */
+  --gov-spacing-lg: 24px; /* 大间距 */
+  --gov-spacing-xl: 32px; /* 超大间距 */
+}
+
+/* ===== 基础布局 ===== */
+.gov-portal {
   min-height: 100vh;
-  background: #f5f7fa;
-  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  background: var(--gov-bg-secondary);
+  font-family:
+    'PingFang SC',
+    'Microsoft YaHei',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  line-height: 1.6;
+  color: var(--gov-text-primary);
 }
 
-/* 顶部导航栏 */
-.top-nav {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+/* 确保所有子元素都继承正确的样式 */
+.gov-portal * {
+  box-sizing: border-box;
+}
+
+/* ===== 顶部导航 ===== */
+.gov-header {
+  background: linear-gradient(135deg, var(--gov-primary) 0%, var(--gov-primary-light) 100%);
   color: white;
-  padding: 12px 0;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  padding: var(--gov-spacing-md) 0;
+  box-shadow: var(--gov-shadow-md);
+  position: relative;
+  z-index: 100;
 }
 
-.nav-container {
+.header-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--gov-spacing-lg);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.nav-left {
+.header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--gov-spacing-md);
 }
 
-.gov-emblem {
-  display: flex;
-  align-items: center;
+.gov-logo .logo-icon {
+  font-size: 32px;
+  color: #fbbf24;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-.site-title h1 {
-  font-size: 26px;
-  font-weight: 600;
+.site-info h1 {
+  font-size: 28px;
+  font-weight: 700;
   margin: 0;
   line-height: 1.2;
-  background: linear-gradient(45deg, #fff, #e3f2fd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  letter-spacing: -0.5px;
 }
 
-.site-title p {
-  font-size: 13px;
-  margin: 4px 0 0 0;
-  opacity: 0.85;
+.site-info p {
+  font-size: 14px;
+  margin: var(--gov-spacing-xs) 0 0 0;
+  opacity: 0.9;
   font-style: italic;
+  font-weight: 300;
 }
 
-.nav-right {
+.header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--gov-spacing-lg);
 }
 
-.search-box {
-  width: 240px;
+.search-container {
+  width: 280px;
 }
 
-.nav-buttons {
+.header-search :deep(.n-input) {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: var(--gov-radius);
+}
+
+.header-search :deep(.n-input__input) {
+  color: white;
+}
+
+.header-search :deep(.n-input__placeholder) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.search-btn {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.search-btn:hover {
+  color: white;
+}
+
+.header-nav {
   display: flex;
-  gap: 8px;
+  gap: var(--gov-spacing-sm);
 }
 
-.nav-btn {
+.nav-link {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
+  border-radius: var(--gov-radius);
+  padding: var(--gov-spacing-xs) var(--gov-spacing-md);
   transition: all 0.2s;
 }
 
-.nav-btn:hover {
+.nav-link:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
-/* 主导航菜单 */
+/* ===== 主导航菜单 ===== */
 .main-nav {
   background: white;
-  border-bottom: 1px solid #e1e5e9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--gov-border);
+  box-shadow: var(--gov-shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--gov-spacing-lg);
 }
 
 .nav-menu {
   display: flex;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 24px;
 }
 
 .nav-item {
-  padding: 16px 24px;
-  color: #4a5568;
+  padding: var(--gov-spacing-md) var(--gov-spacing-lg);
+  color: var(--gov-text-secondary);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   border-bottom: 3px solid transparent;
   position: relative;
+  font-size: 15px;
 }
 
 .nav-item:hover,
 .nav-item.active {
-  color: #1e40af;
-  border-bottom-color: #1e40af;
+  color: var(--gov-primary);
+  border-bottom-color: var(--gov-primary);
   background: linear-gradient(to bottom, rgba(30, 64, 175, 0.05), transparent);
 }
 
-/* Banner样式 */
-.hero-banner {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+/* ===== Hero Section ===== */
+.hero-section {
+  background: linear-gradient(135deg, var(--gov-primary) 0%, var(--gov-primary-light) 100%);
   color: white;
-  padding: 40px 0;
+  padding: 48px 0;
   position: relative;
   overflow: hidden;
 }
 
-.hero-banner::before {
+.hero-section::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')
-    repeat;
-  opacity: 0.3;
+  background-image: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: 0.4;
 }
 
-.banner-container {
+.hero-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--gov-spacing-lg);
   position: relative;
   z-index: 1;
 }
 
-.banner-content {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 40px;
-  align-items: center;
-}
-
-.banner-text h2 {
-  font-size: 32px;
-  font-weight: 700;
-  margin: 0 0 16px 0;
-  line-height: 1.2;
-}
-
-.banner-text p {
-  font-size: 18px;
-  margin: 0 0 32px 0;
-  opacity: 0.9;
-  line-height: 1.5;
-}
-
-.banner-stats {
+.hero-content {
   display: flex;
-  gap: 32px;
+  align-items: center;
+  gap: 48px;
 }
 
-.stat-item {
+.hero-text {
+  flex: 2;
+}
+
+.hero-text h2 {
+  font-size: 36px;
+  font-weight: 800;
+  margin: 0 0 var(--gov-spacing-md) 0;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+
+.hero-text p {
+  font-size: 18px;
+  margin: 0 0 var(--gov-spacing-xl) 0;
+  opacity: 0.95;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.stats-row {
+  display: flex;
+  gap: var(--gov-spacing-xl);
+}
+
+.stat-card {
   text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: var(--gov-spacing-md);
+  border-radius: var(--gov-radius);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .stat-number {
   display: block;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 4px;
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: var(--gov-spacing-xs);
 }
 
 .stat-label {
   font-size: 14px;
-  opacity: 0.8;
+  opacity: 0.9;
+  font-weight: 500;
 }
 
-.banner-image {
+.hero-visual {
+  flex: 1;
   text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
-/* 主要内容区域 */
-.main-content {
+.hero-icon {
+  font-size: 160px;
+  color: rgba(255, 255, 255, 0.2);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+/* ===== 主要内容区域 ===== */
+.main-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 16px;
-}
-
-.content-container {
+  padding: var(--gov-spacing-xl) var(--gov-spacing-lg);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--gov-spacing-lg);
 }
 
-/* 主要功能区域：通知公告、登录区域、政策文件 */
-.primary-row {
+/* ===== 第一行布局：2:2:1.5 ===== */
+.primary-section {
   display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
+  gap: var(--gov-spacing-lg);
 }
 
-/* 下方功能区域：角色系统、快速链接 */
-.bottom-section {
+.announcements-card {
+  flex: 2;
+}
+
+.policies-card {
+  flex: 2;
+}
+
+.login-card {
+  flex: 1.5;
+}
+
+/* ===== 第二行布局：3:1.5 ===== */
+.secondary-section {
   display: flex;
-  gap: 20px;
+  gap: var(--gov-spacing-lg);
 }
 
-/* 内容区域宽度控制 */
-.announcement-section {
-  flex: 2.2;
+.roles-card {
+  flex: 3;
 }
 
-.login-section {
-  flex: 1;
+.links-card {
+  flex: 1.5;
 }
 
-.policy-section {
-  flex: 2.2;
-}
-
-.role-section {
-  flex: 2.2;
-}
-
-.links-section {
-  flex: 1;
-}
-
-/* 隐藏不需要的模块 */
-.secondary-section:nth-child(n+3) {
-  display: none;
-}
-
-/* 基础内容区域样式 */
-.content-section {
+/* ===== 卡片通用样式 - 扁平化设计 ===== */
+.content-card {
   background: white;
-  border-radius: 8px;
-  padding: 20px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
+  border-radius: var(--gov-radius);
+  border: 1px solid var(--gov-border);
+  box-shadow: var(--gov-shadow-sm);
+  transition: all 0.3s;
   display: flex;
   flex-direction: column;
-  position: relative;
+  height: 420px;
 }
 
-/* 主要区域样式 */
-.primary-row .content-section {
-  height: 400px;
-  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
+.content-card:hover {
+  box-shadow: var(--gov-shadow-md);
+  border-color: #d1d5db;
 }
 
-.primary-row .content-section:hover {
-  box-shadow: 0 4px 16px rgba(30, 64, 175, 0.12);
-  border-color: #cbd5e0;
+.card-header {
+  padding: var(--gov-spacing-md) var(--gov-spacing-lg);
+  border-bottom: 1px solid var(--gov-border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--gov-bg-tertiary);
+  flex-shrink: 0;
 }
 
-/* 下方区域样式 */
-.bottom-section .content-section {
-  height: 300px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+.card-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gov-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--gov-spacing-sm);
 }
 
-.bottom-section .content-section:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border-color: #cbd5e0;
+.header-icon {
+  color: var(--gov-primary);
+  font-size: 22px;
 }
 
-/* 内容区域自动填充剩余空间 */
-.content-section .news-list {
+.more-link {
+  color: var(--gov-text-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.more-link:hover {
+  color: var(--gov-primary);
+}
+
+.card-content {
+  padding: var(--gov-spacing-lg);
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== 通知公告样式 ===== */
+.announcement-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gov-spacing-sm);
   flex: 1;
   overflow-y: auto;
 }
 
-/* 核心登录区域 - 突出显示 */
-.primary-login {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  border: 2px solid #1e40af;
-  box-shadow: 0 4px 20px rgba(30, 64, 175, 0.15) !important;
-}
-
-.primary-login:hover {
-  box-shadow: 0 6px 28px rgba(30, 64, 175, 0.2) !important;
-  border-color: #1d4ed8;
-}
-
-.login-section {
-  gap: 16px;
-}
-
-.quick-query-section {
-  flex: 1;
-  min-height: 0;
-}
-
-.login-card {
-  flex-shrink: 0;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-}
-
-/* 简化角色系统样式 */
-.role-container {
-  flex: 1;
-}
-
-.role-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.role-item:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e0;
-  transform: translateY(-1px);
-}
-
-.role-icon {
-  font-size: 20px;
-  color: #1e40af;
-}
-
-.role-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-}
-
-/* 简化快速链接样式 */
-.quick-links-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-
-.quick-link-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #374151;
-  text-decoration: none;
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-
-.quick-link-item:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e0;
-  color: #1e40af;
-  text-decoration: none;
-}
-
-/* 搜索内容样式 */
-.search-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1;
-}
-
-.search-options {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.suggestion-tags {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.suggestion-tag {
-  padding: 4px 8px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.suggestion-tag:hover {
-  background: #e2e8f0;
-  color: #1e40af;
-  border-color: #cbd5e0;
-}
-
-/* 统计内容样式优化 */
-.stats-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.stats-content .stat-item {
-  text-align: center;
-  padding: 16px 12px;
-  background: #f8fafc;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-}
-
-.stats-content .stat-item:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e0;
-}
-
-.stats-content .stat-number {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1e40af;
-  margin-bottom: 4px;
-  display: block;
-}
-
-.stats-content .stat-label {
-  font-size: 13px;
-  color: #64748b;
-  font-weight: 500;
-}
-
-/* 日程内容样式优化 */
-.schedule-content {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.schedule-item {
-  padding: 12px 16px;
-  background: #f8fafc;
-  border-radius: 6px;
-  border-left: 3px solid #1e40af;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.schedule-item:hover {
-  background: #f1f5f9;
-  border-left-width: 4px;
-  padding-left: 15px;
-}
-
-.schedule-date {
-  font-size: 12px;
-  color: #1e40af;
-  font-weight: 600;
-  margin-bottom: 4px;
-  display: block;
-}
-
-.schedule-title {
-  font-size: 13px;
-  color: #374151;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.section-header {
+.announcement-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.section-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* 图标统一样式 */
-.section-icon {
-  color: #1e40af;
-  font-size: 20px;
-}
-
-/* 更多按钮样式 */
-.more-btn {
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.more-btn:hover {
-  color: #1e40af;
-}
-
-.news-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.news-item {
-  padding: 12px;
-  border-radius: 4px;
-  transition: all 0.2s;
+  align-items: flex-start;
+  padding: var(--gov-spacing-md);
+  border: 1px solid var(--gov-border-light);
+  border-radius: var(--gov-radius);
   cursor: pointer;
-  border: 1px solid #f1f5f9;
+  transition: all 0.2s;
+  background: var(--gov-bg-primary);
 }
 
-.news-item:hover {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-color: #cbd5e0;
-  transform: translateX(4px);
+.announcement-item:hover {
+  background: var(--gov-bg-secondary);
+  border-color: var(--gov-primary);
+  transform: translateX(2px);
 }
 
-.news-header {
+.item-content {
+  flex: 1;
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  align-items: center;
+  gap: var(--gov-spacing-sm);
+  min-width: 0;
 }
 
 .top-badge {
-  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  background: var(--gov-error);
   color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.type-badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.type-important {
-  background: linear-gradient(45deg, #ff9ff3, #f368e0);
-  color: white;
-}
-
-.type-notice {
-  background: linear-gradient(45deg, #74b9ff, #0984e3);
-  color: white;
-}
-
-.type-normal {
-  background: linear-gradient(45deg, #a29bfe, #6c5ce7);
-  color: white;
-}
-
-.news-title {
-  color: #2d3748;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.5;
-  margin: 8px 0;
-  transition: color 0.2s;
-}
-
-.news-item:hover .news-title {
-  color: #1e40af;
-}
-
-.news-date {
-  color: #718096;
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.news-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
-}
-
-.news-department {
-  color: #1e40af;
+  padding: 2px var(--gov-spacing-sm);
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
-}
-
-.view-count {
-  color: #a0aec0;
-  font-size: 11px;
-  margin-left: auto;
-}
-
-.more-actions {
-  border-top: 1px solid #f1f5f9;
-  padding-top: 16px;
-}
-
-/* 政策文件特殊样式 */
-.policy-item {
-  border-left: 4px solid #1e40af;
-}
-
-.policy-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.policy-meta {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: #718096;
-  margin-top: 8px;
-}
-
-.policy-department {
-  color: #1e40af;
-  font-weight: 500;
-}
-
-.policy-number {
-  background: #edf2f7;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.policy-category {
-  background: linear-gradient(45deg, #1e40af, #3b82f6);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.policy-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.file-size {
-  color: #718096;
-  font-size: 11px;
-  background: #f7fafc;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.policy-filters {
-  padding: 12px;
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-  border-radius: 4px;
-  border: 1px solid #e1e5e9;
-}
-
-/* 系统角色网格 */
-.role-grid {
-  margin-top: 16px;
-}
-
-.role-card {
-  border: 1px solid #e1e5e9;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  height: 100%;
-}
-
-.role-card:hover {
-  border-color: #1e40af;
-  box-shadow: 0 8px 25px rgba(30, 64, 175, 0.15);
-  transform: translateY(-4px);
-}
-
-.role-content {
-  padding: 20px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.role-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.role-icon {
-  font-size: 24px;
-  color: #1e40af;
-}
-
-.role-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #2d3748;
-  margin: 0;
-}
-
-.role-description {
-  color: #4a5568;
-  font-size: 13px;
-  line-height: 1.5;
-  margin: 0 0 12px 0;
-  flex: 1;
-}
-
-.role-permissions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.permission-tag {
-  background: linear-gradient(45deg, #dbeafe, #bfdbfe);
-  color: #1e40af;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.more-permissions {
-  background: #f5f5f5;
-  color: #666;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-}
-
-/* 右侧边栏 */
-.right-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.login-section {
-  background: white;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e1e5e9;
-}
-
-.login-card {
-  border: none;
-  box-shadow: none;
-}
-
-.login-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.login-type-switch {
-  display: flex;
-  gap: 4px;
-}
-
-.sms-input-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.login-links {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #e9ecef;
-}
-
-.sidebar-section {
-  background: white;
-  border-radius: 4px;
-  padding: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e1e5e9;
-}
-
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.sidebar-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 12px;
-  padding-bottom: 6px;
-  border-bottom: 2px solid #f7fafc;
-}
-
-.search-options {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.quick-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.quick-link {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #4a5568;
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 4px;
-  transition: all 0.2s;
-  border: 1px solid #e1e5e9;
-}
-
-.quick-link:hover {
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
-  color: white;
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
-}
-
-/* 搜索建议样式 */
-.suggestion-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.suggestion-tag {
-  background: linear-gradient(45deg, #f8fafc, #e2e8f0);
-  color: #4a5568;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid #e1e5e9;
-}
-
-.suggestion-tag:hover {
-  background: linear-gradient(45deg, #1e40af, #3b82f6);
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
-}
-
-/* 搜索结果样式 */
-.search-results-content {
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.result-item:hover {
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-  border-color: #1e40af;
-  transform: translateX(4px);
-}
-
-/* 优化的响应式设计 */
-@media (max-width: 1200px) {
-  .primary-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  .primary-row .content-section:last-child {
-    grid-column: 1 / -1;
-  }
-
-  .secondary-row {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-}
-
-@media (max-width: 768px) {
-  .primary-row,
-  .secondary-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .primary-row .content-section,
-  .secondary-section {
-    height: auto;
-    min-height: 300px;
-  }
-
-  .main-content {
-    padding: 12px;
-  }
-
-  .content-section {
-    padding: 16px;
-  }
-}
-
-/* 简化的新闻项样式 */
-.news-item.simplified {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f1f5f9;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.news-item.simplified:hover {
-  background: #f8fafc;
-}
-
-.news-item.simplified:last-child {
-  border-bottom: none;
-}
-
-.news-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.policy-content {
-  align-items: flex-start;
-}
-
-.policy-main {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.top-indicator {
-  color: #dc2626;
-  font-size: 10px;
-  margin-right: 8px;
   flex-shrink: 0;
 }
 
-.news-title {
-  flex: 1;
+.item-title {
   font-weight: 500;
-  color: #374151;
-  line-height: 1.4;
+  color: var(--gov-text-primary);
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.news-date {
+.item-date {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--gov-text-muted);
   flex-shrink: 0;
+  margin-left: var(--gov-spacing-sm);
 }
 
-.role-card {
-  border: 1px solid #f1f5f9;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+/* ===== 政策文件样式 ===== */
+.policy-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gov-spacing-sm);
+  flex: 1;
+  overflow-y: auto;
 }
 
-.role-card:hover {
-  border-color: #e2e8f0;
-  box-shadow: 0 2px 12px rgba(30, 64, 175, 0.1);
+.policy-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--gov-spacing-md);
+  border: 1px solid var(--gov-border-light);
+  border-left: 4px solid var(--gov-primary);
+  border-radius: var(--gov-radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--gov-bg-primary);
+}
+
+.policy-item:hover {
+  background: var(--gov-bg-secondary);
+  border-left-color: var(--gov-primary-dark);
+  transform: translateX(2px);
+}
+
+.policy-item .item-content {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gov-spacing-xs);
+}
+
+.item-meta {
+  font-size: 12px;
+  color: var(--gov-text-muted);
+}
+
+/* ===== 登录表单样式 ===== */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gov-spacing-md);
+}
+
+.login-input :deep(.n-input) {
+  border-radius: var(--gov-radius);
+  border: 1px solid var(--gov-border);
+}
+
+.login-input :deep(.n-input:focus-within) {
+  border-color: var(--gov-primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.login-btn :deep(.n-button) {
+  background: var(--gov-primary);
+  border: none;
+  height: 40px;
+  font-weight: 600;
+  border-radius: var(--gov-radius);
+}
+
+.login-btn :deep(.n-button:hover) {
+  background: var(--gov-primary-dark);
   transform: translateY(-1px);
 }
 
-/* 简化的登录表单样式 */
-.login-form-container {
+.login-actions {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;
-}
-
-.login-extra {
-  border-top: 1px solid #f1f5f9;
-  padding-top: 12px;
-}
-
-/* 按钮统一样式 */
-:deep(.n-button) {
-  border-radius: 6px !important;
-  font-weight: 500 !important;
-  transition: all 0.2s ease !important;
-}
-
-/* 输入框统一样式 */
-:deep(.n-input) {
-  border-radius: 6px !important;
-}
-
-/* 卡片统一样式 */
-:deep(.n-card) {
-  border-radius: 8px !important;
-}
-
-/* 自定义滚动条 */
-.content-section :deep(.n-scrollbar-rail) {
-  right: 4px;
-  width: 6px;
-  background: transparent;
-}
-
-.content-section :deep(.n-scrollbar-rail__scrollbar) {
-  width: 6px;
-  background: #cbd5e0;
-  border-radius: 3px;
-  opacity: 0.6;
-  transition: all 0.2s ease;
-}
-
-.content-section:hover :deep(.n-scrollbar-rail__scrollbar) {
-  opacity: 1;
-  background: #94a3b8;
-}
-
-/* 额外的样式优化 */
-.sms-input-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.login-links {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
-}
-
-.more-actions {
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
-  margin-top: auto;
-}
-
-.policy-filters {
-  margin-bottom: 16px;
-}
-
-.policy-item .policy-header {
-  display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-top: var(--gov-spacing-md);
+  padding-top: var(--gov-spacing-md);
+  border-top: 1px solid var(--gov-border-light);
 }
 
-.policy-actions {
+.login-actions .n-button {
+  color: var(--gov-text-secondary);
+}
+
+.login-actions .n-button:hover {
+  color: var(--gov-primary);
+}
+
+/* ===== 系统角色样式 ===== */
+.roles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gov-spacing-md);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.role-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gov-spacing-md);
+  padding: var(--gov-spacing-md);
+  border: 1px solid var(--gov-border-light);
+  border-radius: var(--gov-radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--gov-bg-primary);
+}
+
+.role-item:hover {
+  background: var(--gov-bg-secondary);
+  border-color: var(--gov-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--gov-shadow-md);
+}
+
+.role-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--gov-primary), var(--gov-primary-light));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.file-size {
-  font-size: 12px;
-  color: #64748b;
-  background: #f1f5f9;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-/* 通知徽章样式 */
-.top-badge {
-  background: #dc2626;
+.role-icon {
+  font-size: 24px;
   color: white;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
 }
 
-.type-badge {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 500;
+.role-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.type-badge.type-important {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+.role-name {
+  font-weight: 600;
+  color: var(--gov-text-primary);
+  margin-bottom: var(--gov-spacing-xs);
 }
 
-.type-badge.type-notice {
-  background: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #dbeafe;
+.role-desc {
+  font-size: 13px;
+  color: var(--gov-text-secondary);
+  line-height: 1.4;
 }
 
-.type-badge.type-normal {
-  background: #f9fafb;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
+/* ===== 快速链接样式 ===== */
+.quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gov-spacing-sm);
+  flex: 1;
+  overflow-y: auto;
 }
 
-.view-count {
-  font-size: 11px;
-  color: #9ca3af;
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gov-spacing-md);
+  padding: var(--gov-spacing-md);
+  border: 1px solid var(--gov-border-light);
+  border-radius: var(--gov-radius);
+  text-decoration: none;
+  color: var(--gov-text-primary);
+  transition: all 0.2s;
+  background: var(--gov-bg-primary);
 }
 
-/* 页脚样式 */
-.site-footer {
-  background: #2d3748;
+.link-item:hover {
+  background: linear-gradient(135deg, var(--gov-primary), var(--gov-primary-light));
   color: white;
-  margin-top: 40px;
+  transform: translateX(4px);
+  box-shadow: var(--gov-shadow-md);
+  text-decoration: none;
+}
+
+.link-item svg {
+  font-size: 20px;
+  color: var(--gov-primary);
+  transition: color 0.2s;
+}
+
+.link-item:hover svg {
+  color: white;
+}
+
+.link-item span {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* ===== 页脚样式 ===== */
+.gov-footer {
+  background: var(--gov-text-primary);
+  color: #d1d5db;
+  margin-top: var(--gov-spacing-xl);
 }
 
 .footer-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--gov-spacing-lg);
 }
 
 .footer-content {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 40px;
-  padding: 40px 0;
+  gap: var(--gov-spacing-xl);
+  padding: var(--gov-spacing-xl) 0;
 }
 
 .footer-section h4 {
-  color: #e2e8f0;
+  color: white;
   font-size: 16px;
   font-weight: 600;
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--gov-spacing-md) 0;
 }
 
 .footer-section ul {
@@ -1958,34 +1305,123 @@ const handleRegister = () => {
 }
 
 .footer-section li {
-  margin-bottom: 8px;
+  margin-bottom: var(--gov-spacing-sm);
   font-size: 14px;
-  color: #a0aec0;
 }
 
 .footer-section a {
-  color: #a0aec0;
+  color: #9ca3af;
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .footer-section a:hover {
-  color: #e2e8f0;
+  color: white;
 }
 
 .footer-bottom {
-  border-top: 1px solid #4a5568;
-  padding: 20px 0;
+  border-top: 1px solid #374151;
+  padding: var(--gov-spacing-lg) 0;
   text-align: center;
 }
 
 .copyright p {
-  margin: 4px 0;
+  margin: var(--gov-spacing-xs) 0;
   font-size: 12px;
-  color: #a0aec0;
+  color: #9ca3af;
 }
 
-/* 动画效果 */
+/* ===== 响应式设计 ===== */
+@media (max-width: 1200px) {
+  .primary-section {
+    flex-direction: column;
+    gap: var(--gov-spacing-md);
+  }
+
+  .announcements-card,
+  .policies-card,
+  .login-card {
+    flex: 1;
+  }
+
+  .secondary-section {
+    flex-direction: column;
+    gap: var(--gov-spacing-md);
+  }
+
+  .roles-card,
+  .links-card {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--gov-spacing-lg);
+  }
+
+  .stats-row {
+    gap: var(--gov-spacing-md);
+  }
+
+  .roles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-container {
+    flex-direction: column;
+    gap: var(--gov-spacing-md);
+  }
+
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-item {
+    padding: var(--gov-spacing-sm) var(--gov-spacing-md);
+  }
+
+  .content-card {
+    height: auto;
+    min-height: 300px;
+  }
+}
+
+/* ===== 滚动条美化 ===== */
+.announcement-list::-webkit-scrollbar,
+.policy-list::-webkit-scrollbar,
+.roles-grid::-webkit-scrollbar,
+.quick-links::-webkit-scrollbar {
+  width: 6px;
+}
+
+.announcement-list::-webkit-scrollbar-track,
+.policy-list::-webkit-scrollbar-track,
+.roles-grid::-webkit-scrollbar-track,
+.quick-links::-webkit-scrollbar-track {
+  background: var(--gov-bg-tertiary);
+  border-radius: 3px;
+}
+
+.announcement-list::-webkit-scrollbar-thumb,
+.policy-list::-webkit-scrollbar-thumb,
+.roles-grid::-webkit-scrollbar-thumb,
+.quick-links::-webkit-scrollbar-thumb {
+  background: var(--gov-border);
+  border-radius: 3px;
+}
+
+.announcement-list::-webkit-scrollbar-thumb:hover,
+.policy-list::-webkit-scrollbar-thumb:hover,
+.roles-grid::-webkit-scrollbar-thumb:hover,
+.quick-links::-webkit-scrollbar-thumb:hover {
+  background: var(--gov-text-muted);
+}
+
+/* ===== 动画效果 ===== */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -1997,27 +1433,116 @@ const handleRegister = () => {
   }
 }
 
-.content-section {
+.content-card {
   animation: fadeInUp 0.6s ease-out;
 }
 
-.content-section:nth-child(2) {
+.content-card:nth-child(2) {
   animation-delay: 0.1s;
 }
 
-.content-section:nth-child(3) {
+.content-card:nth-child(3) {
   animation-delay: 0.2s;
 }
 
-.sidebar-section {
-  animation: fadeInUp 0.6s ease-out;
+/* ===== 深色组件样式覆盖 ===== */
+:deep(.n-button--primary-type) {
+  background: var(--gov-primary) !important;
+  border-color: var(--gov-primary) !important;
 }
 
-.sidebar-section:nth-child(2) {
-  animation-delay: 0.1s;
+:deep(.n-button--primary-type:hover) {
+  background: var(--gov-primary-dark) !important;
+  border-color: var(--gov-primary-dark) !important;
 }
 
-.sidebar-section:nth-child(3) {
-  animation-delay: 0.2s;
+:deep(.n-input:focus-within) {
+  border-color: var(--gov-primary) !important;
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.2) !important;
+}
+
+:deep(.n-button) {
+  border-radius: var(--gov-radius) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+:deep(.n-input) {
+  border-radius: var(--gov-radius) !important;
+}
+
+:deep(.n-card) {
+  border-radius: var(--gov-radius) !important;
+}
+
+/* ===== 特殊元素样式 ===== */
+.search-results-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.result-item:hover {
+  background: var(--gov-bg-secondary);
+  border-color: var(--gov-primary);
+  transform: translateX(4px);
+}
+
+.notice-detail-content,
+.policy-detail-content,
+.role-detail-content {
+  line-height: 1.6;
+}
+
+.notice-meta,
+.policy-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gov-spacing-md);
+  margin-bottom: var(--gov-spacing-md);
+  padding-bottom: var(--gov-spacing-md);
+  border-bottom: 1px solid var(--gov-border-light);
+}
+
+.permissions-section {
+  margin-top: var(--gov-spacing-md);
+}
+
+.permissions-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gov-spacing-sm);
+  margin-top: var(--gov-spacing-sm);
+}
+
+.permission-item {
+  background: var(--gov-bg-tertiary);
+  color: var(--gov-primary);
+  padding: var(--gov-spacing-xs) var(--gov-spacing-sm);
+  border-radius: var(--gov-radius);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ===== 优化细节 ===== */
+.card-content:has(.announcement-list),
+.card-content:has(.policy-list),
+.card-content:has(.roles-grid),
+.card-content:has(.quick-links) {
+  overflow: hidden;
+}
+
+.login-card .card-content {
+  justify-content: center;
+}
+
+/* 确保按钮在hover时有合适的视觉反馈 */
+.n-button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+/* 确保卡片在不同高度下保持一致性 */
+.content-card {
+  min-height: 420px;
+  max-height: 420px;
 }
 </style>

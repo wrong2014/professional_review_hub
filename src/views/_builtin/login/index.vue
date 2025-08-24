@@ -7,13 +7,9 @@ import {
   NFormItem,
   NGi,
   NGrid,
-  NIcon,
   NInput,
-  NList,
-  NListItem,
-  NSpace,
-  NTabPane,
-  NTabs
+  NScrollbar,
+  NSpace
 } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 
@@ -483,18 +479,18 @@ const handleRegister = () => {
     <!-- 主要内容区域 -->
     <div class="main-content">
       <div class="content-container">
-        <!-- 第一行：通知公告、政策文件、登录区域（包含快速查询） -->
-        <div class="top-row">
+        <!-- 主要功能区域：通知公告、登录区域、政策文件 -->
+        <div class="primary-row">
           <!-- 通知公告模块 -->
-          <div class="content-section">
+          <div class="content-section announcement-section">
             <div class="section-header">
               <h3>
-                <Icon icon="mdi:bullhorn" style="color: #1976d2; margin-right: 8px" />
+                <Icon icon="mdi:bullhorn" class="section-icon" />
                 通知公告
               </h3>
-              <NButton text size="small">更多 ></NButton>
+              <NButton text size="small" class="more-btn">更多 ></NButton>
             </div>
-            <NScrollbar style="max-height: 400px">
+            <NScrollbar style="max-height: 320px" trigger="hover">
               <div class="news-list">
                 <div
                   v-for="announcement in announcements"
@@ -529,13 +525,13 @@ const handleRegister = () => {
           </div>
 
           <!-- 政策文件模块 -->
-          <div class="content-section">
+          <div class="content-section policy-section">
             <div class="section-header">
               <h3>
-                <Icon icon="mdi:file-document" style="color: #1976d2; margin-right: 8px" />
+                <Icon icon="mdi:file-document" class="section-icon" />
                 政策文件
               </h3>
-              <NButton text size="small" @click="viewMorePolicies">更多 ></NButton>
+              <NButton text size="small" class="more-btn" @click="viewMorePolicies">更多 ></NButton>
             </div>
 
             <!-- 政策分类筛选 -->
@@ -553,7 +549,7 @@ const handleRegister = () => {
               </NSpace>
             </div>
 
-            <NScrollbar style="max-height: 400px">
+            <NScrollbar style="max-height: 320px" trigger="hover">
               <div class="news-list">
                 <div v-for="policy in filteredPolicyFiles" :key="policy.id" class="news-item policy-item">
                   <div class="policy-header">
@@ -590,13 +586,13 @@ const handleRegister = () => {
             </div>
           </div>
 
-          <!-- 登录和快速查询区域 -->
-          <div class="content-section login-query-section">
+          <!-- 核心登录区域 -->
+          <div class="content-section login-section primary-login">
             <!-- 快速查询模块 -->
             <div class="quick-query-section">
               <div class="section-header">
                 <h3>
-                  <Icon icon="mdi:magnify" style="color: #1976d2; margin-right: 8px" />
+                  <Icon icon="mdi:magnify" class="section-icon" />
                   快速查询
                 </h3>
               </div>
@@ -742,17 +738,17 @@ const handleRegister = () => {
           </div>
         </div>
 
-        <!-- 第二行：系统角色、快速链接等四个模块 -->
-        <div class="bottom-row">
+        <!-- 次要功能区域：系统角色、快速链接、统计、日程 -->
+        <div class="secondary-row">
           <!-- 系统角色模块 -->
-          <div class="content-section role-section">
+          <div class="content-section secondary-section">
             <div class="section-header">
               <h3>
-                <Icon icon="mdi:account-group" style="color: #1976d2; margin-right: 8px" />
+                <Icon icon="mdi:account-group" class="section-icon" />
                 系统角色
               </h3>
             </div>
-            <NScrollbar style="max-height: 400px">
+            <NScrollbar style="max-height: 320px" trigger="hover">
               <NGrid :cols="2" :x-gap="16" :y-gap="16" class="role-grid">
                 <NGi v-for="role in systemRoles" :key="role.id">
                   <NCard class="role-card" hoverable @click="selectRole(role)">
@@ -801,14 +797,14 @@ const handleRegister = () => {
           </div>
 
           <!-- 快速链接模块 -->
-          <div class="content-section">
+          <div class="content-section secondary-section">
             <div class="section-header">
               <h3>
-                <Icon icon="mdi:link-variant" style="color: #1976d2; margin-right: 8px" />
+                <Icon icon="mdi:link-variant" class="section-icon" />
                 快速链接
               </h3>
             </div>
-            <NScrollbar style="max-height: 400px">
+            <NScrollbar style="max-height: 320px" trigger="hover">
               <div class="quick-links">
                 <a href="#" class="quick-link">
                   <Icon icon="mdi:file-plus" />
@@ -838,15 +834,15 @@ const handleRegister = () => {
             </NScrollbar>
           </div>
 
-          <!-- 占位模块1 -->
-          <div class="content-section">
+          <!-- 数据统计模块 -->
+          <div class="content-section secondary-section">
             <div class="section-header">
               <h3>
-                <Icon icon="mdi:chart-box" style="color: #1976d2; margin-right: 8px" />
+                <Icon icon="mdi:chart-box" class="section-icon" />
                 数据统计
               </h3>
             </div>
-            <NScrollbar style="max-height: 400px">
+            <NScrollbar style="max-height: 320px" trigger="hover">
               <div class="stats-content">
                 <div class="stat-item">
                   <div class="stat-number">1,234</div>
@@ -864,15 +860,15 @@ const handleRegister = () => {
             </NScrollbar>
           </div>
 
-          <!-- 占位模块2 -->
-          <div class="content-section">
+          <!-- 重要日程模块 -->
+          <div class="content-section secondary-section">
             <div class="section-header">
               <h3>
-                <Icon icon="mdi:calendar-clock" style="color: #1976d2; margin-right: 8px" />
+                <Icon icon="mdi:calendar-clock" class="section-icon" />
                 重要日程
               </h3>
             </div>
-            <NScrollbar style="max-height: 400px">
+            <NScrollbar style="max-height: 320px" trigger="hover">
               <div class="schedule-content">
                 <div class="schedule-item">
                   <div class="schedule-date">12月15日</div>
@@ -1141,38 +1137,56 @@ const handleRegister = () => {
 .content-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-/* 第一行：通知公告、政策文件、登录 */
-.top-row {
+/* 主要功能区域：通知公告、登录区域、政策文件 */
+.primary-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 400px;
-  gap: 20px;
+  grid-template-columns: 2fr 1fr 2fr;
+  gap: 24px;
+  margin-bottom: 24px;
 }
 
-/* 第二行：系统角色、快速链接等四个模块 */
-.bottom-row {
+/* 次要功能区域：系统角色、快速链接、统计、日程 */
+.secondary-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
+/* 基础内容区域样式 */
 .content-section {
   background: white;
-  border-radius: 4px;
-  padding: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e1e5e9;
-  transition: all 0.3s ease;
-  height: 500px;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-.content-section:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+/* 主要区域样式 */
+.primary-row .content-section {
+  height: 420px;
+  box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
+}
+
+.primary-row .content-section:hover {
+  box-shadow: 0 4px 16px rgba(30, 64, 175, 0.12);
+  border-color: #cbd5e0;
+}
+
+/* 次要区域样式 */
+.secondary-section {
+  height: 360px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.secondary-section:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e0;
 }
 
 /* 内容区域自动填充剩余空间 */
@@ -1181,11 +1195,19 @@ const handleRegister = () => {
   overflow-y: auto;
 }
 
-/* 登录查询区域样式 */
-.content-section.login-query-section {
-  height: 500px;
-  display: flex;
-  flex-direction: column;
+/* 核心登录区域 - 突出显示 */
+.primary-login {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border: 2px solid #1e40af;
+  box-shadow: 0 4px 20px rgba(30, 64, 175, 0.15) !important;
+}
+
+.primary-login:hover {
+  box-shadow: 0 6px 28px rgba(30, 64, 175, 0.2) !important;
+  border-color: #1d4ed8;
+}
+
+.login-section {
   gap: 16px;
 }
 
@@ -1196,20 +1218,40 @@ const handleRegister = () => {
 
 .login-card {
   flex-shrink: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
 }
 
-/* 系统角色区域样式 */
-.content-section.role-section {
-  height: 500px;
-}
-
-/* 快速链接样式调整 */
+/* 快速链接样式优化 */
 .quick-links {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
   align-content: start;
+}
+
+.quick-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  color: #374151;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.quick-link:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e0;
+  color: #1e40af;
+  text-decoration: none;
 }
 
 /* 搜索内容样式 */
@@ -1220,51 +1262,90 @@ const handleRegister = () => {
   flex: 1;
 }
 
-/* 统计内容样式 */
-.stats-content {
+.search-options {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-.stats-content .stat-item {
-  text-align: center;
-  padding: 16px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 8px;
+.suggestion-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.suggestion-tag {
+  padding: 4px 8px;
+  background: #f1f5f9;
   border: 1px solid #e2e8f0;
-}
-
-.stats-content .stat-number {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e40af;
-  margin-bottom: 4px;
-}
-
-.stats-content .stat-label {
-  font-size: 14px;
+  border-radius: 4px;
+  font-size: 12px;
   color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* 日程内容样式 */
-.schedule-content {
+.suggestion-tag:hover {
+  background: #e2e8f0;
+  color: #1e40af;
+  border-color: #cbd5e0;
+}
+
+/* 统计内容样式优化 */
+.stats-content {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
+.stats-content .stat-item {
+  text-align: center;
+  padding: 16px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.stats-content .stat-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e0;
+}
+
+.stats-content .stat-number {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.stats-content .stat-label {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* 日程内容样式优化 */
+.schedule-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .schedule-item {
-  padding: 12px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 8px;
-  border-left: 4px solid #1e40af;
-  transition: all 0.2s;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border-left: 3px solid #1e40af;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .schedule-item:hover {
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
-  transform: translateX(4px);
+  background: #f1f5f9;
+  border-left-width: 4px;
+  padding-left: 15px;
 }
 
 .schedule-date {
@@ -1272,30 +1353,50 @@ const handleRegister = () => {
   color: #1e40af;
   font-weight: 600;
   margin-bottom: 4px;
+  display: block;
 }
 
 .schedule-title {
-  font-size: 14px;
-  color: #2d3748;
+  font-size: 13px;
+  color: #374151;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #f7fafc;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .section-header h3 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  color: #2d3748;
+  color: #1e293b;
   margin: 0;
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+/* 图标统一样式 */
+.section-icon {
+  color: #1e40af;
+  font-size: 20px;
+}
+
+/* 更多按钮样式 */
+.more-btn {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.more-btn:hover {
+  color: #1e40af;
 }
 
 .news-list {
@@ -1678,129 +1779,215 @@ const handleRegister = () => {
   transform: translateX(4px);
 }
 
-/* 响应式设计 */
-@media (max-width: 1024px) {
-  .content-container {
-    grid-template-columns: 1fr;
+/* 优化的响应式设计 */
+@media (max-width: 1200px) {
+  .primary-row {
+    grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
-
-  .nav-container {
-    padding: 0 16px;
+  
+  .primary-row .content-section:last-child {
+    grid-column: 1 / -1;
   }
-
-  .main-content {
-    padding: 12px;
-  }
-
-  .banner-content {
-    grid-template-columns: 1fr;
-    gap: 24px;
-    text-align: center;
-  }
-
-  .banner-text h2 {
-    font-size: 28px;
-  }
-
-  .banner-text p {
-    font-size: 16px;
-  }
-
-  .banner-stats {
-    justify-content: center;
-    gap: 24px;
+  
+  .secondary-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }
 
 @media (max-width: 768px) {
-  .nav-container {
-    flex-direction: column;
+  .primary-row,
+  .secondary-row {
+    grid-template-columns: 1fr;
     gap: 12px;
-    text-align: center;
   }
-
-  .nav-menu {
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 0 12px;
+  
+  .primary-row .content-section,
+  .secondary-section {
+    height: auto;
+    min-height: 300px;
   }
-
-  .nav-item {
-    padding: 10px 14px;
-    font-size: 14px;
-  }
-
-  .role-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .search-box {
-    width: 100%;
-  }
-
-  .hero-banner {
-    padding: 24px 0;
-  }
-
-  .banner-text h2 {
-    font-size: 24px;
-  }
-
-  .banner-text p {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-
-  .banner-stats {
-    gap: 16px;
-  }
-
-  .stat-number {
-    font-size: 24px;
-  }
-
+  
   .main-content {
-    padding: 8px;
-  }
-
-  .content-section {
     padding: 12px;
   }
-
-  .top-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .bottom-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .footer-content {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    padding: 20px 0;
+  
+  .content-section {
+    padding: 16px;
   }
 }
 
-/* 平板响应式 */
-@media (max-width: 1024px) {
-  .top-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
+/* 细节优化 */
+.news-item {
+  padding: 14px;
+  border: 1px solid #f1f5f9;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fefefe;
+}
 
-  .bottom-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
+.news-item:hover {
+  border-color: #e2e8f0;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
 
-  .footer-content {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-  }
+.news-item:last-child {
+  margin-bottom: 0;
+}
+
+.role-card {
+  border: 1px solid #f1f5f9;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.role-card:hover {
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 12px rgba(30, 64, 175, 0.10);
+  transform: translateY(-1px);
+}
+
+/* 登录表单优化 */
+.login-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.login-type-switch {
+  display: flex;
+  gap: 6px;
+}
+
+/* 按钮统一样式 */
+:deep(.n-button) {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+/* 输入框统一样式 */
+:deep(.n-input) {
+  border-radius: 6px !important;
+}
+
+/* 卡片统一样式 */
+:deep(.n-card) {
+  border-radius: 8px !important;
+}
+
+/* 自定义滚动条 */
+.content-section :deep(.n-scrollbar-rail) {
+  right: 4px;
+  width: 6px;
+  background: transparent;
+}
+
+.content-section :deep(.n-scrollbar-rail__scrollbar) {
+  width: 6px;
+  background: #cbd5e0;
+  border-radius: 3px;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.content-section:hover :deep(.n-scrollbar-rail__scrollbar) {
+  opacity: 1;
+  background: #94a3b8;
+}
+
+/* 额外的样式优化 */
+.sms-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.login-links {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.more-actions {
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: auto;
+}
+
+.policy-filters {
+  margin-bottom: 16px;
+}
+
+.policy-item .policy-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.policy-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* 通知徽章样式 */
+.top-badge {
+  background: #dc2626;
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.type-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.type-badge.type-important {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.type-badge.type-notice {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+}
+
+.type-badge.type-normal {
+  background: #f9fafb;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.view-count {
+  font-size: 11px;
+  color: #9ca3af;
 }
 
 /* 页脚样式 */

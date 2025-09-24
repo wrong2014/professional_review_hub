@@ -40,6 +40,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'expert',
+    path: '/expert',
+    component: 'layout.base$view.expert',
+    meta: {
+      title: 'expert',
+      i18nKey: 'route.expert'
+    }
+  },
+  {
     name: 'home',
     path: '/home',
     component: 'layout.base$view.home',
@@ -74,5 +83,23 @@ export const generatedRoutes: GeneratedRoute[] = [
       hideInMenu: true
     },
     props: true
+  },
+  {
+    name: 'organization',
+    path: '/organization',
+    component: 'layout.base$view.organization',
+    meta: {
+      title: 'organization',
+      i18nKey: 'route.organization'
+    }
+  },
+  {
+    name: 'personal',
+    path: '/personal',
+    component: 'layout.base$view.personal',
+    meta: {
+      title: 'personal',
+      i18nKey: 'route.personal'
+    }
   }
 ];

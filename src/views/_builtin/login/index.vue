@@ -7,12 +7,13 @@ import { Icon } from '@iconify/vue';
 const loginForm = reactive({
   username: '',
   password: '',
-  phone: '',
-  smsCode: ''
+  validCode: '',
+  deviceId: 'FB061777-08E2-4BBC-81B6-4FB92A2A54FB',
+  grant_type: 'password_code'
 });
 
-// 登录方式：password（密码登录）、sms（短信验证登录）
-const loginType = ref<'password' | 'sms'>('password');
+// 登录类型：personal（个人）、organization（机构）、expert（专家）
+const loginType = ref<'personal' | 'organization' | 'expert'>('personal');
 
 // 系统角色定义
 interface SystemRole {
@@ -155,35 +156,27 @@ const systemRoles: SystemRole[] = reactive([
 
 // 查询功能相关
 const searchKeyword = ref('');
-const _searchType = ref('all');
 
 // 登录处理函数
 const handleLogin = () => {
   // 登录逻辑
 };
 
-// 切换登录方式
-const _switchLoginType = (type: 'password' | 'sms') => {
+// 切换登录类型
+const switchLoginType = (type: 'personal' | 'organization' | 'expert') => {
   loginType.value = type;
   Object.assign(loginForm, {
     username: '',
     password: '',
-    phone: '',
-    smsCode: ''
+    validCode: '',
+    deviceId: 'FB061777-08E2-4BBC-81B6-4FB92A2A54FB',
+    grant_type: 'password_code'
   });
 };
 
 // 搜索功能
 const searchQuery = ref('');
 const searchResults = ref<Array<{ title: string; type: string; date: string }>>([]);
-const _searchSuggestions = ref([
-  '职称评审流程',
-  '申报材料清单',
-  '评审标准',
-  '政策文件下载',
-  '专家库查询',
-  '评审结果公示'
-]);
 
 const handleSearch = () => {
   const keyword = searchKeyword.value || searchQuery.value;
@@ -233,12 +226,6 @@ const handleSearch = () => {
     style: { width: '700px' },
     positiveText: '关闭'
   });
-};
-
-// 快速搜索建议
-const _handleQuickSearch = (suggestion: string) => {
-  searchKeyword.value = suggestion;
-  handleSearch();
 };
 
 // 查看通知详情
@@ -552,12 +539,36 @@ onUnmounted(() => {
               <Icon icon="mdi:account-circle" class="header-icon" />
               用户登录
             </h3>
+            <div class="login-type-switches">
+              <NButton
+                size="small"
+                :type="loginType === 'personal' ? 'primary' : 'default'"
+                @click="switchLoginType('personal')"
+              >
+                个人
+              </NButton>
+              <NButton
+                size="small"
+                :type="loginType === 'organization' ? 'primary' : 'default'"
+                @click="switchLoginType('organization')"
+              >
+                机构
+              </NButton>
+              <NButton
+                size="small"
+                :type="loginType === 'expert' ? 'primary' : 'default'"
+                @click="switchLoginType('expert')"
+              >
+                专家
+              </NButton>
+            </div>
           </div>
           <div class="card-content">
+            <!-- 登录表单 -->
             <div class="login-form">
               <NForm :model="loginForm">
                 <NFormItem>
-                  <NInput v-model:value="loginForm.username" placeholder="用户名/手机号" class="login-input">
+                  <NInput v-model:value="loginForm.username" placeholder="用户名" class="login-input">
                     <template #prefix>
                       <Icon icon="mdi:account" />
                     </template>
@@ -577,7 +588,16 @@ onUnmounted(() => {
                   </NInput>
                 </NFormItem>
                 <NFormItem>
-                  <NButton type="primary" block class="login-btn" @click="handleLogin">登录</NButton>
+                  <NInput v-model:value="loginForm.validCode" placeholder="验证码" class="login-input">
+                    <template #prefix>
+                      <Icon icon="mdi:shield-check" />
+                    </template>
+                  </NInput>
+                </NFormItem>
+                <NFormItem>
+                  <NButton type="primary" block class="login-btn" @click="handleLogin">
+                    {{ loginType === 'personal' ? '个人' : loginType === 'organization' ? '机构' : '专家' }}登录
+                  </NButton>
                 </NFormItem>
               </NForm>
               <div class="login-actions">
@@ -1292,6 +1312,16 @@ onUnmounted(() => {
 .item-meta {
   font-size: 12px;
   color: var(--gov-text-muted);
+}
+
+/* ===== 登录类型切换按钮样式 ===== */
+.login-type-switches {
+  display: flex;
+  gap: var(--gov-spacing-xs);
+}
+
+.login-type-switches .n-button {
+  font-size: 12px;
 }
 
 /* ===== 登录表单样式 ===== */

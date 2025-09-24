@@ -38,6 +38,18 @@ export function fetchRefreshToken(refreshToken: string) {
 }
 
 /**
+ * Get validation code
+ *
+ * @param deviceId Device ID
+ */
+export function fetchValidationCode(deviceId: string) {
+  return request({
+    url: `/validata/code/${deviceId}`,
+    method: 'get'
+  });
+}
+
+/**
  * return custom backend error
  *
  * @param code error code

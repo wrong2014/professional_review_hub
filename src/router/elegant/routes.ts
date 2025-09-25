@@ -45,7 +45,10 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.expert',
     meta: {
       title: 'expert',
-      i18nKey: 'route.expert'
+      i18nKey: 'route.expert',
+      icon: 'mdi:account-star',
+      order: 1,
+      userTypes: ['expert']
     }
   },
   {
@@ -56,7 +59,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'home',
       i18nKey: 'route.home',
       icon: 'mdi:monitor-dashboard',
-      order: 1
+      order: 2,
+      userTypes: ['personal', 'organization', 'expert']
     }
   },
   {
@@ -87,11 +91,25 @@ export const generatedRoutes: GeneratedRoute[] = [
   {
     name: 'organization',
     path: '/organization',
-    component: 'layout.base$view.organization',
+    component: 'layout.base',
     meta: {
       title: 'organization',
-      i18nKey: 'route.organization'
-    }
+      i18nKey: 'route.organization',
+      icon: 'mdi:office-building',
+      order: 1,
+      userTypes: ['organization']
+    },
+    children: [
+      {
+        name: 'organization_def',
+        path: '/organization/def',
+        component: 'view.organization_def',
+        meta: {
+          title: 'organization_def',
+          i18nKey: 'route.organization_def'
+        }
+      }
+    ]
   },
   {
     name: 'personal',
@@ -99,7 +117,10 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.personal',
     meta: {
       title: 'personal',
-      i18nKey: 'route.personal'
+      i18nKey: 'route.personal',
+      icon: 'mdi:account',
+      order: 1,
+      userTypes: ['personal']
     }
   }
 ];

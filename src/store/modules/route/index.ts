@@ -5,6 +5,7 @@ import { useBoolean } from '@sa/hooks';
 import type { CustomRoute, ElegantConstRoute, LastLevelRouteKey, RouteKey, RouteMap } from '@elegant-router/types';
 import { router } from '@/router';
 import { fetchGetConstantRoutes, fetchGetUserRoutes, fetchIsRouteExist } from '@/service/api';
+import { localStg } from '@/utils/storage';
 import { SetupStoreId } from '@/enum';
 import { createStaticRoutes, getAuthVueRoutes } from '@/router/routes';
 import { ROOT_ROUTE } from '@/router/routes/builtin';
@@ -40,6 +41,24 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
 
   /** Home route key */
   const routeHome = ref(import.meta.env.VITE_ROUTE_HOME);
+
+  /**
+   * Get dynamic route home based on user type
+   */
+  function getDynamicRouteHome(): LastLevelRouteKey {
+    const userType = localStg.get('userType');
+
+    if (userType === 'personal') {
+      return 'personal';
+    } else if (userType === 'organization') {
+      return 'organization_def';
+    } else if (userType === 'expert') {
+      return 'expert';
+    }
+
+    // 默认返回环境变量中的值
+    return import.meta.env.VITE_ROUTE_HOME;
+  }
 
   /**
    * Set route home
@@ -198,7 +217,6 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
       addAuthRoutes(staticAuthRoutes);
     } else {
       const filteredAuthRoutes = filterAuthRoutesByRoles(staticAuthRoutes, authStore.userInfo.roles);
-
       addAuthRoutes(filteredAuthRoutes);
     }
 
@@ -328,6 +346,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
   return {
     resetStore,
     routeHome,
+    getDynamicRouteHome,
     menus,
     searchMenus,
     updateGlobalMenusByLocale,

@@ -16,53 +16,168 @@ import { getRouteName } from '@/router/elegant/transform';
  *
  * @param router router instance
  */
+// Helper functions to reduce complexity
+function handleRootRoute(options: { to: any; next: any; isLogin: boolean; userType: string; loginRoute: RouteKey }) {
+  const { to, next, isLogin, userType, loginRoute } = options;
+  console.log(`=== 根路由重定向调试信息 ===`);
+  console.log(`当前用户类型: ${userType}`);
+  console.log(`目标路由: ${to.name}`);
+  console.log(`是否已登录: ${isLogin}`);
+
+  if (isLogin && userType) {
+    const routeStore = useRouteStore();
+    const dynamicHome = routeStore.getDynamicRouteHome();
+    console.log(`动态获取的默认页面: ${dynamicHome}`);
+    next({ name: dynamicHome as RouteKey });
+  } else {
+    console.log('未登录或用户类型无效，跳转到登录页');
+    next({ name: loginRoute });
+  }
+}
+
+function handleOrganizationRedirect(next: any) {
+  console.log(`=== 自动重定向到子路由 ===`);
+  console.log(`从 organization 重定向到 organization_def`);
+  next({ name: 'organization_def' });
+}
+
+function handleLoginRouteRedirect(userType: string, next: any, loginRoute: RouteKey) {
+  const personalRoute: RouteKey = 'personal';
+  const organizationRoute: RouteKey = 'organization';
+  const expertRoute: RouteKey = 'expert';
+
+  if (userType === 'personal') {
+    next({ name: personalRoute });
+  } else if (userType === 'organization') {
+    next({ name: organizationRoute });
+  } else if (userType === 'expert') {
+    next({ name: expertRoute });
+  } else {
+    localStg.remove('token');
+    localStg.remove('userType');
+    next({ name: loginRoute });
+  }
+}
+
+function handleUserTypePermission(options: {
+  userType: string;
+  currentRouteName: string;
+  next: any;
+  rootRoute: RouteKey;
+}) {
+  const { userType, currentRouteName, next, rootRoute } = options;
+  const allowedRoutes = getUserTypeAllowedRoutes(userType);
+
+  if (!allowedRoutes.includes(currentRouteName) && currentRouteName !== rootRoute) {
+    const personalRoute: RouteKey = 'personal';
+    const organizationRoute: RouteKey = 'organization';
+    const expertRoute: RouteKey = 'expert';
+
+    if (userType === 'personal') {
+      next({ name: personalRoute });
+    } else if (userType === 'organization') {
+      next({ name: organizationRoute });
+    } else if (userType === 'expert') {
+      next({ name: expertRoute });
+    }
+    return true;
+  }
+  return false;
+}
+
+function handleAuthenticatedUserRoutes(options: {
+  to: any;
+  next: any;
+  userType: string;
+  rootRoute: RouteKey;
+  hasAuth: boolean;
+  noAuthorizationRoute: RouteKey;
+}) {
+  const { to, next, userType, rootRoute, hasAuth, noAuthorizationRoute } = options;
+
+  // 用户类型验证
+  if (!userType || !['personal', 'organization', 'expert'].includes(userType)) {
+    localStg.remove('token');
+    localStg.remove('userType');
+    next({ name: 'login' });
+    return true;
+  }
+
+  // 用户权限检查
+  if (handleUserTypePermission({ userType, currentRouteName: to.name as string, next, rootRoute })) {
+    return true;
+  }
+
+  // 角色权限检查
+  if (!hasAuth) {
+    next({ name: noAuthorizationRoute });
+    return true;
+  }
+
+  return false;
+}
+
 export function createRouteGuard(router: Router) {
   router.beforeEach(async (to, from, next) => {
     const location = await initRoute(to);
-
     if (location) {
       next(location);
       return;
     }
 
     const authStore = useAuthStore();
-
     const rootRoute: RouteKey = 'root';
     const loginRoute: RouteKey = 'login';
     const noAuthorizationRoute: RouteKey = '403';
 
-    const isLogin = Boolean(localStg.get('token'));
+    // 完整的登录状态判断
+    const token = localStg.get('token');
+    const refreshToken = localStg.get('refreshToken');
+    const userType = localStg.get('userType');
+    const isLogin = Boolean(token && refreshToken && userType);
     const needLogin = !to.meta.constant;
     const routeRoles = to.meta.roles || [];
 
     const hasRole = authStore.userInfo.roles.some(role => routeRoles.includes(role));
     const hasAuth = authStore.isStaticSuper || !routeRoles.length || hasRole;
 
-    // if it is login route when logged in, then switch to the root page
-    if (to.name === loginRoute && isLogin) {
-      next({ name: rootRoute });
+    // 根路由重定向
+    if (to.name === rootRoute) {
+      handleRootRoute({ to, next, isLogin, userType: userType || '', loginRoute });
       return;
     }
 
-    // if the route does not need login, then it is allowed to access directly
+    // Organization路由重定向
+    if (isLogin && userType && to.name === 'organization') {
+      handleOrganizationRedirect(next);
+      return;
+    }
+
+    // 登录路由处理
+    if (to.name === loginRoute && isLogin) {
+      handleLoginRouteRedirect(userType || '', next, loginRoute);
+      return;
+    }
+
+    // 无需登录的路由
     if (!needLogin) {
       handleRouteSwitch(to, from, next);
       return;
     }
 
-    // the route need login but the user is not logged in, then switch to the login page
+    // 未登录处理
     if (!isLogin) {
       next({ name: loginRoute, query: { redirect: to.fullPath } });
       return;
     }
 
-    // if the user is logged in but does not have authorization, then switch to the 403 page
-    if (!hasAuth) {
-      next({ name: noAuthorizationRoute });
+    // 已登录用户的权限检查
+    if (
+      handleAuthenticatedUserRoutes({ to, next, userType: userType || '', rootRoute, hasAuth, noAuthorizationRoute })
+    ) {
       return;
     }
 
-    // switch route normally
     handleRouteSwitch(to, from, next);
   });
 }
@@ -189,4 +304,27 @@ function getRouteQueryOfLoginRoute(to: RouteLocationNormalized, routeHome: Route
   }
 
   return query;
+}
+
+/**
+ * 根据用户类型获取允许访问的路由列表
+ * @param userType 用户类型
+ */
+function getUserTypeAllowedRoutes(userType: string): string[] {
+  const commonRoutes = ['403', '404', '500', 'login', 'home']; // 所有用户都能访问的公共路由
+
+  switch (userType) {
+    case 'personal':
+      return ['personal', ...commonRoutes];
+    case 'organization':
+      return [
+        'organization', // 父路由
+        'organization_def', // 当前的子路由
+        ...commonRoutes
+      ];
+    case 'expert':
+      return ['expert', ...commonRoutes];
+    default:
+      return commonRoutes;
+  }
 }

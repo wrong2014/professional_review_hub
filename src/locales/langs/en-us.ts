@@ -169,6 +169,7 @@ const local: App.I18n.Schema = {
     home: 'Home',
     expert: 'Expert',
     organization: 'Organization',
+    organization_def: 'Organization Management',
     personal: 'Personal'
   },
   page: {

@@ -169,6 +169,7 @@ const local: App.I18n.Schema = {
     home: '首页',
     expert: '专家',
     organization: '机构',
+    organization_def: '机构管理',
     personal: '个人'
   },
   page: {

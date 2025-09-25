@@ -17,8 +17,18 @@ async function handleRefreshToken() {
   const rToken = localStg.get('refreshToken') || '';
   const { error, data } = await fetchRefreshToken(rToken);
   if (!error) {
-    localStg.set('token', data.token);
-    localStg.set('refreshToken', data.refreshToken);
+    // 根据OAuth响应格式更新token存储
+    if (typeof data.resp_code === 'number' && data.resp_code === 0 && data.datas) {
+      localStg.set('token', data.datas.access_token);
+      localStg.set('refreshToken', data.datas.refresh_token);
+      localStg.set('tokenType', data.datas.token_type);
+      localStg.set('expiresIn', data.datas.expires_in.toString());
+      localStg.set('tokenTimestamp', Date.now().toString());
+      return true;
+    }
+    // 如果是旧格式，保持兼容
+    localStg.set('token', data.token || data.access_token || '');
+    localStg.set('refreshToken', data.refreshToken || data.refresh_token || '');
     return true;
   }
 

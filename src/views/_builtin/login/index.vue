@@ -2,18 +2,23 @@
 import { h, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { NButton, NForm, NFormItem, NInput } from 'naive-ui';
 import { Icon } from '@iconify/vue';
+import { fetchOAuthToken, getValidationCodeUrl } from '@/service/api/auth';
+import { localStg } from '@/utils/storage';
+
+// 设备ID - 统一使用
+const deviceId = 'A910DEFA-E4F9-4435-B66A-0CB2F61C1FE0';
 
 // 登录表单数据
 const loginForm = reactive({
   username: '',
   password: '',
   validCode: '',
-  deviceId: 'FB061777-08E2-4BBC-81B6-4FB92A2A54FB',
+  deviceId,
   grant_type: 'password_code'
 });
 
 // 登录类型：personal（个人）、organization（机构）、expert（专家）
-const loginType = ref<'personal' | 'organization' | 'expert'>('personal');
+const loginType = ref<'personal' | 'organization' | 'expert'>('organization');
 
 // 系统角色定义
 interface SystemRole {
@@ -157,9 +162,126 @@ const systemRoles: SystemRole[] = reactive([
 // 查询功能相关
 const searchKeyword = ref('');
 
+// 验证码图片地址
+const captchaUrl = ref('');
+
+// 刷新验证码
+const refreshCaptcha = () => {
+  captchaUrl.value = getValidationCodeUrl(deviceId);
+};
+
+// Helper functions for login
+const getUserTypeText = (type: 'personal' | 'organization' | 'expert'): string => {
+  if (type === 'personal') return '个人';
+  if (type === 'organization') return '机构';
+  return '专家';
+};
+
+const logLoginDebugInfo = (params: any) => {
+  console.log('=== 机构登录调试信息 ===');
+  console.log('1. 请求参数:', params);
+  console.log('2. 环境信息:', {
+    isDev: import.meta.env.DEV,
+    isHttpProxy: import.meta.env.VITE_HTTP_PROXY,
+    baseURL: import.meta.env.VITE_SERVICE_BASE_URL
+  });
+  console.log('3. 即将发送请求到 /oauth/token');
+};
+
+const handleLoginSuccess = (tokenData: any) => {
+  console.log('6. 存储token数据:', tokenData);
+
+  localStg.set('token', tokenData.access_token);
+  localStg.set('refreshToken', tokenData.refresh_token);
+  localStg.set('tokenType', tokenData.token_type);
+  localStg.set('expiresIn', tokenData.expires_in.toString());
+  localStg.set('tokenTimestamp', Date.now().toString());
+  localStg.set('userType', loginType.value);
+
+  const userTypeText = getUserTypeText(loginType.value);
+  window.$message?.success(`${userTypeText}登录成功，正在跳转...`);
+
+  console.log('7. 准备跳转到对应的用户类型页面');
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 1000);
+};
+
+const handleLoginError = (result: any, oauthData: any) => {
+  console.log('6. 登录失败:', result);
+
+  if (result.error) {
+    console.log('7. flatRequest错误:', result.error);
+    window.$message?.error(result.error.message || '登录请求失败');
+  } else if (oauthData && typeof oauthData.resp_code === 'number') {
+    const errorMessage = oauthData.resp_msg || '登录失败';
+    console.log('7. OAuth业务错误:', errorMessage);
+    window.$message?.error(errorMessage);
+  } else {
+    console.log('7. 未知响应格式:', result);
+    window.$message?.error('登录响应格式异常');
+  }
+};
+
+const handleLoginException = (error: any) => {
+  console.log('4. 机构登录失败:', error);
+  console.log('5. 错误详情:', {
+    message: error?.message,
+    status: error?.status,
+    response: error?.response,
+    config: error?.config
+  });
+
+  const userTypeText = getUserTypeText(loginType.value);
+  let errorMessage = `${userTypeText}登录失败`;
+
+  if (error?.response?.data?.resp_msg) {
+    errorMessage = error.response.data.resp_msg;
+  } else if (error?.response?.data?.msg) {
+    errorMessage = error.response.data.msg;
+  } else if (error?.message) {
+    errorMessage = `${userTypeText}登录失败: ${error.message}`;
+  }
+
+  window.$message?.error(errorMessage);
+};
+
+const performOrganizationLogin = async () => {
+  const params = {
+    username: loginForm.username,
+    password: loginForm.password,
+    validCode: loginForm.validCode,
+    deviceId: loginForm.deviceId,
+    grant_type: loginForm.grant_type
+  };
+
+  logLoginDebugInfo(params);
+
+  try {
+    const result = await fetchOAuthToken(params);
+    console.log('4. 机构登录响应:', result);
+
+    const oauthData = result.data;
+    console.log('5. OAuth数据:', oauthData);
+
+    if (oauthData && oauthData.resp_code === 0 && oauthData.datas) {
+      handleLoginSuccess(oauthData.datas);
+    } else {
+      handleLoginError(result, oauthData);
+    }
+  } catch (error: any) {
+    handleLoginException(error);
+  }
+};
+
 // 登录处理函数
-const handleLogin = () => {
-  // 登录逻辑
+const handleLogin = async () => {
+  if (loginType.value === 'organization') {
+    await performOrganizationLogin();
+  } else {
+    const typeText = loginType.value === 'personal' ? '个人' : '专家';
+    window.$message?.info(`${typeText}登录功能待开发`);
+  }
 };
 
 // 切换登录类型
@@ -169,7 +291,7 @@ const switchLoginType = (type: 'personal' | 'organization' | 'expert') => {
     username: '',
     password: '',
     validCode: '',
-    deviceId: 'FB061777-08E2-4BBC-81B6-4FB92A2A54FB',
+    deviceId,
     grant_type: 'password_code'
   });
 };
@@ -383,6 +505,8 @@ const handleRegister = () => {
 
 // 生命周期钩子
 onMounted(() => {
+  // 初始化验证码
+  refreshCaptcha();
   // 启动通知自动滚动
   setTimeout(() => {
     startAutoScroll();
@@ -588,11 +712,20 @@ onUnmounted(() => {
                   </NInput>
                 </NFormItem>
                 <NFormItem>
-                  <NInput v-model:value="loginForm.validCode" placeholder="验证码" class="login-input">
-                    <template #prefix>
-                      <Icon icon="mdi:shield-check" />
-                    </template>
-                  </NInput>
+                  <div class="captcha-input-group">
+                    <NInput v-model:value="loginForm.validCode" placeholder="验证码" class="login-input captcha-input">
+                      <template #prefix>
+                        <Icon icon="mdi:shield-check" />
+                      </template>
+                    </NInput>
+                    <img
+                      :src="captchaUrl"
+                      alt="验证码"
+                      class="captcha-image"
+                      title="点击刷新验证码"
+                      @click="refreshCaptcha"
+                    />
+                  </div>
                 </NFormItem>
                 <NFormItem>
                   <NButton type="primary" block class="login-btn" @click="handleLogin">
@@ -1329,6 +1462,30 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--gov-spacing-md);
+}
+
+.captcha-input-group {
+  display: flex;
+  gap: var(--gov-spacing-sm);
+  align-items: center;
+}
+
+.captcha-input {
+  flex: 1;
+}
+
+.captcha-image {
+  width: 80px;
+  height: 32px;
+  border: 1px solid var(--gov-border);
+  border-radius: var(--gov-radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.captcha-image:hover {
+  border-color: var(--gov-primary);
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.1);
 }
 
 .login-input :deep(.n-input) {

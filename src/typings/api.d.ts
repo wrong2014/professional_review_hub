@@ -57,6 +57,20 @@ declare namespace Api {
     interface LoginToken {
       token: string;
       refreshToken: string;
+      // OAuth response properties
+      resp_code?: string;
+      resp_msg?: string;
+      datas?: {
+        access_token: string;
+        refresh_token: string;
+        token_type: string;
+        expires_in: number;
+      };
+      // Direct OAuth properties (for backward compatibility)
+      access_token?: string;
+      refresh_token?: string;
+      token_type?: string;
+      expires_in?: number;
     }
 
     interface UserInfo {

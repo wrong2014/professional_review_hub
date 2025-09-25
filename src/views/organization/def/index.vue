@@ -4,7 +4,7 @@ import { NButton, NCard, NSpace } from 'naive-ui';
 import { localStg } from '@/utils/storage';
 
 const userInfo = ref({
-  type: '评审专家',
+  type: '机构用户',
   token: '',
   loginTime: ''
 });
@@ -30,9 +30,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="expert-page">
+  <div class="organization-page">
     <NSpace vertical :size="20">
-      <NCard title="评审专家工作台" bordered>
+      <NCard title="评审机构管理中心bcd" bordered>
         <template #header-extra>
           <NButton type="primary" ghost @click="handleLogout">退出登录</NButton>
         </template>
@@ -53,26 +53,26 @@ onMounted(() => {
         </NSpace>
       </NCard>
 
-      <NCard title="专家功能区" bordered>
+      <NCard title="机构功能区" bordered>
         <NSpace :size="12">
-          <NButton type="info">待评审材料</NButton>
-          <NButton type="success">评审打分</NButton>
-          <NButton type="warning">评审意见</NButton>
-          <NButton>评审历史</NButton>
-          <NButton type="primary">专家信息</NButton>
+          <NButton type="info">评审任务管理</NButton>
+          <NButton type="success">专家安排</NButton>
+          <NButton type="warning">申报材料审核</NButton>
+          <NButton>评审结果管理</NButton>
+          <NButton type="error">机构设置</NButton>
         </NSpace>
       </NCard>
 
       <NCard title="权限说明" bordered>
-        <p>评审专家可以查看分配的评审任务、对申报材料进行评分和评议。</p>
-        <p>需要按照评审标准客观公正地进行评审，并提供详细的评审意见。</p>
+        <p>机构用户可以组织职称评审工作、安排专家、管理评审流程等。</p>
+        <p>拥有评审管理的最高权限，负责整个评审流程的组织协调。</p>
       </NCard>
     </NSpace>
   </div>
 </template>
 
 <style scoped>
-.expert-page {
+.organization-page {
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;

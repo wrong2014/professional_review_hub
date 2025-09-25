@@ -25,6 +25,7 @@ declare module "@elegant-router/types" {
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "organization": "/organization";
+    "organization_def": "/organization/def";
     "personal": "/personal";
   };
 
@@ -89,7 +90,7 @@ declare module "@elegant-router/types" {
     | "login"
     | "expert"
     | "home"
-    | "organization"
+    | "organization_def"
     | "personal"
   >;
 

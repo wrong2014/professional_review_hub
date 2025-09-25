@@ -1,6 +1,7 @@
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw, _RouteRecordBase } from 'vue-router';
 import type { ElegantConstRoute, LastLevelRouteKey, RouteKey, RouteMap } from '@elegant-router/types';
 import { useSvgIcon } from '@/hooks/common/icon';
+import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
 
 /**
@@ -11,6 +12,16 @@ import { $t } from '@/locales';
  */
 export function filterAuthRoutesByRoles(routes: ElegantConstRoute[], roles: string[]) {
   return routes.flatMap(route => filterAuthRouteByRoles(route, roles));
+}
+
+/**
+ * Filter auth routes by user types
+ *
+ * @param routes Auth routes
+ * @param userType Current user type
+ */
+export function filterAuthRoutesByUserType(routes: ElegantConstRoute[], userType: string) {
+  return routes.flatMap(route => filterAuthRouteByUserType(route, userType));
 }
 
 /**
@@ -40,6 +51,35 @@ function filterAuthRouteByRoles(route: ElegantConstRoute, roles: string[]): Eleg
   }
 
   return hasPermission || isEmptyRoles ? [filterRoute] : [];
+}
+
+/**
+ * Filter auth route by user type
+ *
+ * @param route Auth route
+ * @param userType Current user type
+ */
+function filterAuthRouteByUserType(route: ElegantConstRoute, userType: string): ElegantConstRoute[] {
+  const routeUserTypes = (route.meta && route.meta.userTypes) || [];
+
+  // if the route's "userTypes" is empty, then it is allowed to access
+  const isEmptyUserTypes = !routeUserTypes.length;
+
+  // if the current user type is included in the route's "userTypes", then it is allowed to access
+  const hasUserTypePermission = routeUserTypes.includes(userType);
+
+  const filterRoute = { ...route };
+
+  if (filterRoute.children?.length) {
+    filterRoute.children = filterRoute.children.flatMap(item => filterAuthRouteByUserType(item, userType));
+  }
+
+  // Exclude the route if it has no children after filtering
+  if (filterRoute.children?.length === 0) {
+    return [];
+  }
+
+  return hasUserTypePermission || isEmptyUserTypes ? [filterRoute] : [];
 }
 
 /**
@@ -75,9 +115,23 @@ export function sortRoutesByOrder(routes: ElegantConstRoute[]) {
  */
 export function getGlobalMenusByAuthRoutes(routes: ElegantConstRoute[]) {
   const menus: App.Global.Menu[] = [];
+  // 获取用户类型，用于菜单过滤
+  const userType = localStg.get('userType') || 'organization';
+  console.log(`=== 菜单过滤调试信息 ===`);
+  console.log(`当前用户类型: ${userType}`);
 
   routes.forEach(route => {
     if (!route.meta?.hideInMenu) {
+      // 检查用户类型权限，如果有userTypes定义且当前用户类型不在其中，则隐藏菜单
+      const routeUserTypes = route.meta?.userTypes;
+      console.log(`路由 ${route.name} 的userTypes: ${JSON.stringify(routeUserTypes)}`);
+
+      if (routeUserTypes && !routeUserTypes.includes(userType)) {
+        console.log(`隐藏菜单项: ${route.name} (用户类型 ${userType} 不在允许列表中)`);
+        return; // 跳过此菜单项
+      }
+
+      console.log(`显示菜单项: ${route.name}`);
       const menu = getGlobalMenuByBaseRoute(route);
 
       if (route.children?.some(child => !child.meta?.hideInMenu)) {

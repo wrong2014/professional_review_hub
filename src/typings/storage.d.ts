@@ -39,5 +39,13 @@ declare namespace StorageType {
     };
     /** The last login user id */
     lastLoginUserId: string;
+    /** The user type (personal, organization, expert) */
+    userType: string;
+    /** The token type */
+    tokenType: string;
+    /** The token expires in seconds */
+    expiresIn: string;
+    /** The token timestamp */
+    tokenTimestamp: string;
   }
 }

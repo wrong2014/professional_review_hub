@@ -2,7 +2,7 @@ import { computed, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { defineStore } from 'pinia';
 import { useLoading } from '@sa/hooks';
-import { fetchGetUserInfo, fetchLogin } from '@/service/api';
+import { fetchLogin } from '@/service/api';
 import { useRouterPush } from '@/hooks/common/router';
 import { localStg } from '@/utils/storage';
 import { SetupStoreId } from '@/enum';
@@ -146,8 +146,23 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   }
 
   async function getUserInfo() {
-    const { data: info, error } = await fetchGetUserInfo();
+    // 暂时注释掉getUserInfo接口调用，避免404错误
+    // const { data: info, error } = await fetchGetUserInfo();
 
+    // 暂时返回成功，使用模拟的用户信息
+    const mockUserInfo = {
+      userId: '1',
+      userName: 'admin',
+      roles: ['admin'] as const,
+      buttons: [] as string[]
+    };
+
+    // update store with mock data
+    Object.assign(userInfo, mockUserInfo);
+
+    return true;
+
+    /* 原来的代码：
     if (!error) {
       // update store
       Object.assign(userInfo, info);
@@ -156,6 +171,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     }
 
     return false;
+    */
   }
 
   async function initUserInfo() {
